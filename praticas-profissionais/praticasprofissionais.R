@@ -1,29 +1,10 @@
 # Libraries ----
 library(car) # Function Recode
 library(psych) # Function Describe
+library(mirt)
 
 # Import data ----
 
-## Var names
-vars  <- read.csv("praticasprofissionais_labels.csv", sep=",")
-varnames  <- names(vars); rm(vars)
-
-## Dataframe
-praticasPro  <- read.csv("praticasprofissionais.csv", col.names=varnames, na.strings=c(NA, "-")); rm(varnames)
-
-## Recode Social Perception Scale 
-for (i in 41:77){
-  praticasPro[,i]   <-  Recode(praticasPro[,i], "'Concordo'=4 ; c('Concordo totalmente', 'Concordo Totalmente')=5 ; 'Discordo' = 2; c('Discordo totalmente','Discordo Totalmente') = 1;  'Nem discordo, nem concordo' = 3")                         
-}
-
-praticasPro  <- subset(praticasPro, select = -c(1,2,3,4,5,6,11,12,13,14))
-write.csv(praticasPro, "praticasprofissionais_df.csv")
-
-# Questions - not implemented yet.
-questions  <- read.csv("praticasprofissionais_questions.csv")
-questionsLabels  <- as.vector(questions[1:37,]); rm(questions)
-
-# Analysis----
 ## Import dataframe
 praticasPro  <- read.csv("praticasprofissionais_df.csv")
 
@@ -34,50 +15,50 @@ praticasPro  <- subset(praticasPro, subset=praticasPro$termo=="Sim" & praticasPr
 
 # Demographics
 ## Age
-
+# Demographics
+## Age
 ### Clean data
-idade  <- as.character(praticasPro$idade)
-idade[9]  <- "35"; idade[44] <- "29"; idade[69]  <- "31"; idade[111]   <-  42;
-praticasPro$age  <- as.numeric(gsub("anos(.*)", "", idade))
+praticasPro$idade  <- as.numeric(as.character(praticasPro$idade))
+praticasPro$idade[praticasPro$idade < 18 | praticasPro$idade > 68 ]  <- NA
+
 
 ### Descriptives
-summary(praticasPro$age) # all
-by(praticasPro$age, praticasPro$sexo, describe) #by sex
+summary(praticasPro$idade) # all
+by(praticasPro$idade, praticasPro$sexo, describe) #by sex
 
 ## Sex
-cbind(round(prop.table(table(praticasPro$sexo)),2))
+cbind(round(prop.table(sort(table(praticasPro$sexo), decreasing = TRUE)),2))
 
 ## Degree
-cbind(round(prop.table(table(praticasPro$escolaridade)),2))
+cbind(round(prop.table(sort(table(praticasPro$escolaridade), decreasing = TRUE)),2))
 
 ## Marital Staus
-cbind(round(prop.table(table(praticasPro$estadocivil)),2))
+cbind(round(prop.table(sort(table(praticasPro$estadocivil), decreasing = TRUE)),2))
 
 ## Education
-cbind(round(prop.table(table(praticasPro$formacao)),2)) # Broken, needs manual recoding
+#cbind(round(prop.table(table(praticasPro$formacao)),2)) # Broken, needs manual recoding
 
 ## Ocupação
-cbind(round(prop.table(table(praticasPro$ocupacao)),2)) # Broken, needs manual recoding
+#cbind(round(prop.table(table(praticasPro$ocupacao)),2)) # Broken, needs manual recoding
 
 ## Time  working
-timeWorking  <- as.character(praticasPro$tempo.atuacao)
-praticasPro$timeWorking  <- as.numeric(gsub("anos(.*)", "", timeWorking)) 
-describe(praticasPro$timeWorking)
+timeWorking  <- as.numeric(as.character(praticasPro$tempodeservico))
+timeWorking[timeWorking > 59]  <- NA
+summary(timeWorking)
 
 ## Religion 
-cbind(round(prop.table(table(praticasPro$religiao)),2)) 
+cbind(round(prop.table(sort(table(praticasPro$religiao), decreasing = TRUE)),2))
 
 ## Contact 
-cbind(round(prop.table(table(praticasPro$contato.tema)),2))  
+cbind(round(prop.table(sort(table(praticasPro$contatoanterior), decreasing = TRUE)),2))
 
 ## Deal with
-cbind(round(prop.table(table(praticasPro$lida.com)),2)) 
+cbind(round(prop.table(sort(table(praticasPro$lidadiretamente), decreasing = TRUE)),2))
 
 ## Where deal with
-cbind(round(prop.table(table(praticasPro$onde.lida.com)),2))
+cbind(round(prop.table(sort(table(praticasPro$lida.onde), decreasing = TRUE)),2))
 
 # Scale analysis ---
-
 # Full scale
 fullScale  <- praticasPro[,32:68]
 
@@ -136,6 +117,6 @@ fa.diagram(faAll)
 ### Bifactor Model
 library(mirt)
 factors  <- c(2,2,2,2,2,2,2,2,1,1,1,1,2,1,1,1,2,2,1,1,1,1,2,2,2,1,1,2,1,1,1,1,2,2,1,1,2) # based on efa scores
-mbi  <- bfactor(fullScale, factors)
+mbi  <- bfactor(fullScale, factors, verbose = FALSE)
 summary(mbi)
 residuals(mbi)
