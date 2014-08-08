@@ -95,6 +95,40 @@ Desvantagens
 * Requer processamento dado a natureza dos arquivos.
 
 
+# Modelo de Regressão
+
+VD's:
+
+* Nota do aluno
+* Passou / Não passou
+
+Covariáveis:
+
+Sócio-demográfico
+1. Motivo para participação no curso;
+2. Adequação do material didático;
+3. Flexibilidade das atividades;
+4. Interação virtual;
+5. Organização do curso;
+6. Importância do auxílio do tutor;
+7. Auto-avaliação;
+8. Participação simultânea em outro curso de capacitação ou pós graduação;
+
+Notas
+9.  Nota da atividade colaborativa;
+10. Nota nas provas;
+11. Nota fórum;	
+
+Facilitadores
+* Informação será dada somente no módulo 4
+
+Dificultadores
+* Informação será dada somente no módulo 4.
+
+A pensar:
+De 1 a 10 qual a nota você dá para seu tutor?
+
+
 # Ideias
 
 1. Artigo descrito sobre o curso e suas características básicas. Tentar identificar perfis dos alunos.
