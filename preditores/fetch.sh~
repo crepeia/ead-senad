@@ -13,3 +13,6 @@ for i in {302..305}
 do
   wget -O logs/class$i.csv ${WGET_OPTS} "${URLBASE}$i${URLSUFFIX}"
 done
+
+
+
