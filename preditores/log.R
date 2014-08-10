@@ -1,16 +1,31 @@
 # Set dataframe
 setwd("logs/")
 
-# Read all csv's in log folder
-filenames <- list.files()
-dfnames  <- gsub(".txt", "", filenames)
+# Read log file
+logData  <- read.table("log.txt", sep = "", header = FALSE, blank.lines.skip = FALSE, col.names= c("turma", "curso", "hora", "ip",  "fullname",	"action",	"info"), stringsAsFactors=FALSE)
 
+# Remove curso var
+logData  <- logData[, -2]
+                   
+# Convert PT months into numbers
+logData$hora  <- gsub('dezembro', "12", logData$hora)
+logData$hora  <- gsub('novembro', "11", logData$hora)
+logData$hora  <- gsub('outubro', "10", logData$hora)
+logData$hora  <- gsub('setembro', "09", logData$hora)
+logData$hora  <- gsub('agosto', "08", logData$hora)
+logData$hora  <- gsub('julho', "07", logData$hora)
+logData$hora  <- gsub('junho', "06", logData$hora)
+logData$hora  <- gsub('maio', "05", logData$hora)
+logData$hora  <- gsub('abril', "04", logData$hora)
+logData$hora  <- gsub('março', "03", logData$hora)
+logData$hora  <- gsub('fevereiro', "02", logData$hora)
+logData$hora  <- gsub('janeiro', "01", logData$hora)
 
-for(i in 1:length(filenames)) {
-    
-  assign(dfnames[i], read.table(filenames[i], sep = "", header=TRUE, skip=1,  blank.lines.skip = FALSE))
-  dfnames[i]
-  
-}
+# Convert to date 
+logData$hora  <- as.Date(logData$hora, "%d %m %Y, %H:%M")
 
-?aggregate.data.frame
+# Access by Date
+library(ggplot2)
+graphAccess  <- ggplot(logData, aes(hora))
+graphAccess + geom_freqpoly(colour = "blue", binwidth = 10) + labs(x = "Month", y = "Frequency") 
+

@@ -6,7 +6,7 @@ cd logs
 for i in {302..305}
 do  
   # Remove the first and second line of every txt
-  sed '1,3d' <class$i.txt>class_$i.txt
+  sed '1,3d' <class$i.csv>class_$i.txt
   
   # Insert class number 
   awk -F, -v variable=$i '{$1=variable "\t"  $1}1' OFS=, class_$i.txt >> class.final.$i.txt
