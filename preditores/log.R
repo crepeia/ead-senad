@@ -1,3 +1,7 @@
+# Libraries
+library(ggplot2)
+library(reshape2)
+
 # Set dataframe
 setwd("logs/")
 
@@ -24,8 +28,18 @@ logData$hora  <- gsub('janeiro', "01", logData$hora)
 # Convert to date 
 logData$hora  <- as.Date(logData$hora, "%d %m %Y, %H:%M")
 
-# Access by Date
-library(ggplot2)
+# QUESTION 1 - IS THE PLATFORM ACTIVITY CHANGING OVER TIME - MONTHS?
+
 graphAccess  <- ggplot(logData, aes(hora))
 graphAccess + geom_freqpoly(colour = "blue", binwidth = 10) + labs(x = "Month", y = "Frequency") 
+
+# QUESTION 2 - IS THE PLATFORM ACTIVITY CHANGING OVER TIME - WEEKDAYS?
+
+# QUESTION 2 - HOW DOES THE PLATFORM ACTIVITY CHANGE OVER DAYTIME?
+
+# QUESTION 3 - WHO ARE THE MOST ACTIVE AND UNACTIVE USERS?
+
+# QUESTION 4 - WHAT ARE THE MOST VIEWED?
+
+# QUESTION 5 - WHAT ARE THE MOST ACTIVE CLASSES?
 
