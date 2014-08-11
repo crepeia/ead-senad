@@ -13,7 +13,7 @@ URLSUFFIX="&user=&date=0&modid=&modaction=&logformat=downloadascsv"
 # Create directory for log files
 mkdir logs
 
-for i in {302..486}
+for i in {302..305}
 do
   wget -O logs/class$i.csv ${WGET_OPTS} "${URLBASE}$i${URLSUFFIX}"
 done

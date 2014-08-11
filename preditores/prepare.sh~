@@ -3,8 +3,7 @@
 # go to logs folder
 cd logs
 
-for i in {302..486}
-
+for i in {302..305}
 do  
   # Remove the first and second line of every txt
   sed '1,3d' <class$i.csv>class_$i.txt
