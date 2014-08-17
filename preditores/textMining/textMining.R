@@ -1,111 +1,124 @@
-# Check this links: http://cran.r-project.org/web/packages/tm/vignettes/tm.pdf, http://onepager.togaware.com/TextMiningO.pdf
+# Check these links: http://cran.r-project.org/web/packages/tm/vignettes/tm.pdf, http://onepager.togaware.com/TextMiningO.pdf
 
-#instalando os pacotes wordcloud, tm e RColorBrewer
+#Install packages ----
+
+# Uncoment lines to install packages
+
 #install.packages("wordcloud")
 #install.packages("tm")
 #install.packages("RColorBrewer")
 #install.packages("SnowballC")
+#install.packages("ggplot2")
 
-#carregando pacotes
-library("wordcloud")
+# RGraphviz
+#source("http://bioconductor.org/biocLite.R")
+# biocLite("Rgraphviz")
+
+# Load libraries ----
 library("tm")
-library("RColorBrewer")
 library("SnowballC")
+library("Rgraphviz")
+library("wordcloud")
+library("RColorBrewer")
+library("ggplot2")
 
-# OPCIONAL - Escolhendo o diretório de trabalho (setwd - Working Directory) - Descomente para utilizar
-setwd("Área de Trabalho/")
 
-#selecionando planilha com dados
+# Import data file ----
 capa  <- read.table("categorizacao.csv", header = T, fill=TRUE, sep=",")
 capa  <- capa[,-c(3,4)]
 
-# Pontos Frageis ----
+# Weak points ----
 
-#definindo corpus
-corpusFrageis  <- VCorpus(VectorSource(capa$pontosfrageis))
+# Define Corpus
+corpusWeak  <- VCorpus(VectorSource(capa$pontosfrageis))
 
-#removendo espaços em branco, formatando as letras em minúsculas e removendo a pontuação
-corpusFrageis  <- tm_map(corpusFrageis, content_transformer(stripWhitespace))
-corpusFrageis  <- tm_map(corpusFrageis, content_transformer(tolower))
-corpusFrageis  <- tm_map(corpusFrageis, content_transformer(removePunctuation))
-corpusFrageis  <- tm_map(corpusFrageis, content_transformer(removeNumbers))
-corpusFrageis  <- tm_map(corpusFrageis, removeWords, stopwords("portuguese"))
-corpusFrageis  <- tm_map(corpusFrageis, stemDocument, "portuguese")
+# Remove blank spaces, transforming to Lower, remove punctuation, remove stopwords and stem doc.
+corpusWeak  <- tm_map(corpusWeak, content_transformer(stripWhitespace))
+corpusWeak  <- tm_map(corpusWeak, content_transformer(tolower))
+corpusWeak  <- tm_map(corpusWeak, content_transformer(removePunctuation))
+corpusWeak  <- tm_map(corpusWeak, content_transformer(removeNumbers))
+corpusWeak  <- tm_map(corpusWeak, removeWords, stopwords("portuguese"))
+corpusWeak  <- tm_map(corpusWeak, stemDocument, "portuguese")
 
 # Inspect corpusFrageis
-dtm <- TermDocumentMatrix(corpusFrageis)
-
-# Document Term Matrix
-freq <- colSums(as.matrix(dtm))
-
-# Check how many words were used
-length(freq)
-
-# Order the words in ocurrence
-ord  <- order(freq)
-
-# Least frequent items
-freq[head(ord)]
-
-# More frequent items
-freq[tail(ord, 40)]
-
+dtmWeak <- TermDocumentMatrix(corpusWeak)
 
 # Find frequent words
-findFreqTerms(dtm, lowfreq= 400)
+findFreqTerms(dtmWeak, lowfreq =250)
 
 # Find more correlated words
-findAssocs(dtm, "drog", corlimit=0.3)
+findAssocs(dtmWeak, "drog", corlimit=0.2)
 
 # plot
-plot(dtm, terms = findFreqTerms(dtm, lowfreq= 300), corThreshold=.2)
+graph.par(list(edges=list(fontsize=16, texCol="darkred")))
+plot(dtmWeak, terms = findFreqTerms(dtmWeak, lowfreq= 150), corThreshold=.3)
 
+# Clustering ---- 
 
+dtm2Weak <- removeSparseTerms(dtmWeak, sparse=0.90)
+
+# convert the sparse term-document matrix to a standard data frame
+mydata.df <- as.data.frame(inspect(dtm2Weak))
+
+# Scale
+mydata.df.scale <- scale(mydata.df)
+d <- dist(mydata.df.scale, method = "euclidean") # distance matrix
+fit <- hclust(d, method="ward.D")
+plot(fit, main="") # display dendogram?
+
+groups <- cutree(fit, k=10) # cut tree into 5 clusters
+# draw dendogram with red borders around the 5 clusters
+rect.hclust(fit, k=10, border="red")
 
 # Create wordcloud
-wordcloud(corpusFrageis, random.order = F, colors = brewer.pal(5, "Dark2"))
+wordcloud(corpusWeak, random.order = F, min.freq = 50, colors = brewer.pal(5, "Dark2"))
 
 
 # Pontos fortes ----
 
 #definindo corpus
-corpusFortes  <- VCorpus(VectorSource(capa$pontosfortes))
+corpusStrong  <- VCorpus(VectorSource(capa$pontosfortes))
 
 #removendo espaços em branco, formatando as letras em minúsculas e removendo a pontuação
-corpusFortes  <- tm_map(corpusFortes, content_transformer(stripWhitespace))
-corpusFortes  <- tm_map(corpusFortes, content_transformer(tolower))
-corpusFortes  <- tm_map(corpusFortes, content_transformer(removePunctuation))
-corpusFortes  <- tm_map(corpusFortes, content_transformer(removeNumbers))
-corpusFortes  <- tm_map(corpusFortes, removeWords, stopwords("portuguese"))
-corpusFortes  <- tm_map(corpusFortes, stemDocument, "portuguese")
+corpusStrong  <- tm_map(corpusStrong, content_transformer(stripWhitespace))
+corpusStrong  <- tm_map(corpusStrong, content_transformer(tolower))
+corpusStrong  <- tm_map(corpusStrong, content_transformer(removePunctuation))
+corpusStrong  <- tm_map(corpusStrong, content_transformer(removeNumbers))
+corpusStrong  <- tm_map(corpusStrong, removeWords, stopwords("portuguese"))
+corpusStrong  <- tm_map(corpusStrong, stemDocument, "portuguese")
 
 # Inspect corpusFortes
-dtm <- TermDocumentMatrix(corpusFortes)
-
-# Document Term Matrix
-freq <- colSums(as.matrix(dtm))
-
-# Check how many words were used
-length(freq)
-
-# Order the words in ocurrence
-ord  <- order(freq)
-
-# Least frequent items
-freq[head(ord)]
-
-# More frequent items
-freq[tail(ord, 40)]
+dtmStrong <- TermDocumentMatrix(corpusStrong)
 
 
 # Find frequent words
-findFreqTerms(dtm, lowfreq= 300)
+findFreqTerms(dtmStrong, lowfreq =250)
 
 # Find more correlated words
-findAssocs(dtm, "ambient", corlimit=0.3)
+findAssocs(dtmStrong, "drog", corlimit=0.2)
+
+# plot
+graph.par(list(edges=list(fontsize=16, texCol="darkred")))
+plot(dtmStrong, terms = findFreqTerms(dtmStrong, lowfreq= 150), corThreshold=.3)
+
+# Clustering ---- 
+
+dtm2Strong <- removeSparseTerms(dtmStrong, sparse=0.90)
+
+# convert the sparse term-document matrix to a standard data frame
+mydata.df <- as.data.frame(inspect(dtm2Strong))
+
+# Scale
+mydata.df.scale <- scale(mydata.df)
+d <- dist(mydata.df.scale, method = "euclidean") # distance matrix
+fit <- hclust(d, method="ward.D")
+plot(fit, main="") # display dendogram?
+
+groups <- cutree(fit, k=10) # cut tree into 5 clusters
+# draw dendogram with red borders around the 5 clusters
+rect.hclust(fit, k=10, border="red")
 
 # Create wordcloud
-wordcloud(corpusFortes, random.order = F, colors = brewer.pal(5, "Dark2"))
-
+wordcloud(corpusStrong, random.order = F, min.freq = 50, colors = brewer.pal(5, "Dark2"))
 
 

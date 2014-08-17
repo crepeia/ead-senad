@@ -1,6 +1,7 @@
 # Libraries
 library(ggplot2)
 library(reshape2)
+library(plyr)
 
 # Set dataframe
 setwd("logs/")
@@ -36,11 +37,6 @@ logData$hora <- strptime(logData$hora, format="%d %m %Y, %H:%M")
 # Create var without the url path
 logData$activity <- gsub("\\s\\(.*\\)", "", logData$action)
 
-cbind(sort(table(logData$activity), decreasing = TRUE))
-
-barplot(sort(table(logData$turma), decreasing = TRUE))
-mean(table(logData$turma))
-abline(h = mean(table(logData$turma)))
 
 # QUESTION 1 - IS THE PLATFORM ACTIVITY CHANGING OVER TIME - MONTHS?
 
@@ -78,7 +74,19 @@ df <- ldply(teste, data.frame)
 head(df)
 
 # QUESTION 5 - WHAT ARE THE MOST ACTIVE CLASSES?
-cbind(sort(table(logData$turma), decreasing = FALSE))
+
+activeClasses  <- tapply(logData$activity, logData$turma, table, simplify=FALSE)
+df <- ldply(activeClasses, data.frame)
+
+dfCast  <- dcast(df, .id ~ Var1)
+names(dfCast)
+head(dfCast)
+
+Column <- gvisColumnChart()
+
+barplot(sort(table(logData$turma), decreasing = TRUE), col = "blue", ylim = c(0,40000))
+abline(h = mean(table(logData$turma)), colour="blue")
+
 
 #Graph
 graphAccess  <- ggplot(logData, aes(logData$))
