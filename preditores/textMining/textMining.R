@@ -44,7 +44,8 @@ corpusWeak  <- tm_map(corpusWeak, stemDocument, "portuguese")
 dtmWeak <- TermDocumentMatrix(corpusWeak)
 
 # Find frequent words
-findFreqTerms(dtmWeak, lowfreq =250)
+findFreqTerms(dtmWeak, lowfreq =200)
+freqWords  <- findFreqTerms(dtmWeak, lowfreq =200)
 
 # Find more correlated words
 findAssocs(dtmWeak, "drog", corlimit=0.2)
@@ -74,7 +75,7 @@ rect.hclust(fit, k=10, border="red")
 wordcloud(corpusWeak, random.order = F, min.freq = 50, colors = brewer.pal(5, "Dark2"))
 
 
-# Pontos fortes ----
+# Strenghts ----
 
 #definindo corpus
 corpusStrong  <- VCorpus(VectorSource(capa$pontosfortes))
