@@ -30,7 +30,10 @@ logData$hora  <- gsub('fevereiro', "02", logData$hora)
 logData$hora  <- gsub('janeiro', "01", logData$hora)
 
 # Convert to date 
+## PostIx
 logData$hora <- strptime(logData$hora, format="%d %m %Y, %H:%M")
+## as Date
+logData$time  <- as.Date(logData$hora, "%d %m %Y, %H:%M")
 
 
 ### Variable Activity
@@ -64,14 +67,6 @@ cbind(sort(table(logData$fullname), decreasing = FALSE))
 by(logData$activity, logData$turma, table)
 tapply(logData$activity, logData$fullname, table, simplify=FALSE)
 
-tapply(logData$activity, logData$fullname, table, simplify=FALSE)
-tapply(logData$activity, logData$turma, table)
-
-
-teste  <- tapply(logData$activity, logData$turma, table, simplify=FALSE)
-df <- ldply(teste, data.frame)
-
-head(df)
 
 # QUESTION 5 - WHAT ARE THE MOST ACTIVE CLASSES?
 
@@ -87,9 +82,17 @@ Column <- gvisColumnChart()
 barplot(sort(table(logData$turma), decreasing = TRUE), col = "blue", ylim = c(0,40000))
 abline(h = mean(table(logData$turma)), colour="blue")
 
-
 #Graph
 graphAccess  <- ggplot(logData, aes(logData$))
 graphAccess + geom_density(colour = "blue", fill="blue") + labs(x = "Month", y = "Frequency") 
+
+
+## PERGUNTA - Quem são os usuários ativos - ativo = usou a plataforma nos último 15 dias.
+dataUltimo <- by(logData$time, logData$fullname, max, simplify=FALSE)
+ultimoAcesso  <- do.call("c", dataUltimo)
+dfUltimoAcesso <- as.data.frame(ultimoAcesso)
+table(dfUltimoAcesso$ultimoAcesso > "2014-08-18")
+write.csv(dfUltimoAcesso, "ultimoAcesso.csv")
+
 
 
