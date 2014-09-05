@@ -35,7 +35,11 @@ socialPer  <- subset(socialPer, subset=socialPer$termo=="Sim" & socialPer$estado
 
 #### Idade
 ```{r}
-summary(socialPer$age) # all
+socialPer$idade <- gsub("[A-z]", "", socialPer$idade)
+socialPer[28,9]  <- "42"
+socialPer$idade  <- as.numeric(socialPer$idade)
+summary(socialPer$idade) # all
+sd(socialPer$idade, na.rm = TRUE)
 by(socialPer$age, socialPer$sexo, describe) #by sex
 ```
 
@@ -56,9 +60,9 @@ cbind(round(prop.table(table(socialPer$estadocivil)),2))
 
 #### Tempo de serviço
 ```{r}
-timeWorking  <- as.character(socialPer$tempodeservico)
-socialPer$timeWorking  <- as.numeric(gsub("anos(.*)", "", timeWorking)) 
-describe(socialPer$timeWorking)
+socialPer$tempodeservico <- gsub("[A-z]", "", socialPer$tempodeservico)
+socialPer$tempodeservico <- as.numeric(socialPer$tempodeservico)
+summary(socialPer$tempodeservico)
 ```
 
 #### Religião

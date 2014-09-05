@@ -1,0 +1,18 @@
+---
+title: "Questões da Escala"
+author: "Ana Luisa"
+date: "05-09-2014"
+output: word_document
+---
+
+## Itens da escala de Percepção Social
+
+```{r}
+questions  <- read.csv("percepcaosocial_questions.csv")
+questionsLabels  <- as.vector(questions[1:39,]); rm(questions)
+```
+
+```{r, echo=FALSE}
+print(questionsLabels)
+```
+
