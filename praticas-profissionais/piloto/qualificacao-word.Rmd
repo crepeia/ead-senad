@@ -1,0 +1,186 @@
+---
+title: "Relatório Qualificação"
+author: "Jéssica Tibúrcio"
+date: "11-09-2014"
+output: word_document
+---
+
+Este relatório objetiva apresentar as análises introdutória do instrumento "Escala de práticas na prevenção do uso de álcool e outras drogas", que está em fase de desenvolvimento pelo Centro de Referência em Pesquisa, Intervenção e Avaliação em Álcool e Outras Drogas (http://www.ufjf.br/crepeia/).
+
+O instrumento está sendo validado para população de educadores. O objetivo da pesquisa é oferecer uma medida confiável para avaliação das crenças e práticas de educadores de um curso à distância oferecido pela Secretaria Nacional de Políticas sobre Drogas para aproximadamente 10.000 educadores dos estados de Minas Gerais, Rio de Janeiro e Paraná.
+
+Durante todo o processo de desenvolvimento, foram utilizadas ferramentas de código-aberto, para facilitar o re-uso das técnicas e procedimentos desenvolvidos. Todo conteúdo do instrumento e de suas etapas estará disponível para o público no repositório (http://github.com/crepeia/ead-senad). Atualmente, o projeto está hospedado no repositório (http://github.com/henriquepgomide/ead-senad). 
+
+Neste relatório são apresentadas, análises da escala com base em uma amostra de 136 educadores-tutores do curso. As análises foram conduzidas através da linguagem de programação R usando os pacotes *car* e *psych*. 
+
+Banco de Dados
+-------------------------
+
+O banco de dados da pesquisa, pode ser obtido no seguinte endereço: (https://github.com/henriquepgomide/ead-senad/blob/master/praticasprofissionais_df.csv).
+
+Resultados
+-------------------------
+
+Os resultados são apresentados por tópicos: caracterização da amostra, avaliação descritiva da escala e análise fatorial exploratória.
+
+
+### Bibliotecas
+```{r}
+library(car) # Function Recode
+library(psych) # Function Describe
+library(xtable) # Function xtable
+praticasPro  <- read.csv("praticasprofissionais_df.csv")
+## Summing scales to remove NA's
+praticasPro$scaleSum  <- rowSums(praticasPro[,21:63])
+## Subset completed observations and consented participation
+praticasPro  <- subset(praticasPro, subset=praticasPro$termo=="Sim" & praticasPro$estado=="Finalizadas" & !is.na(praticasPro$scaleSum))
+
+```
+
+### Sócio-demográficas
+
+Dos 136, educadores 86,8% eram do sexo feminino e 13,2% do sexo masculino. A idade média da amostra foi de 39,37 anos (DP= 8,45). Aproxidamente 91,2% da amostra possuia como último nível de formação pós-graduação e 8,8% ensino superior completo. O tempo mediano de atuação como professor foi de 10 anos (Distância Interquartílica = 12).
+
+No que se refere ao contato com o tema, aproximadamente 64,2% dos participantes lidaram com usuários de álcool e outras drogas. A maioria dos profissionais disse lidar com usuários na escola 50,5% e 26,8% na família.
+
+
+#### Idade
+```{r}
+idade  <- as.character(praticasPro$idade)
+idade[9]  <- "35"; idade[44] <- "29"; idade[69]  <- "31"; idade[111]   <-  42;
+praticasPro$idade  <- as.numeric(gsub("anos(.*)", "", idade))
+describe(praticasPro$idade) # all
+by(praticasPro$idade, praticasPro$sexo, describe) #by sex
+
+```
+
+#### Sexo
+```{r}
+cbind(round(prop.table(table(praticasPro$sexo)),3))
+```
+
+#### Escolaridade
+```{r}
+cbind(round(prop.table(table(praticasPro$escolaridade)),3))
+```
+
+#### Estado Civil
+```{r}
+cbind(round(prop.table(table(praticasPro$estadocivil)),3))
+```
+
+#### Tempo de serviço
+```{r}
+timeWorking  <- as.character(praticasPro$tempo.atuacao)
+praticasPro$timeWorking  <- as.numeric(gsub("anos(.*)", "", timeWorking)) 
+describe(praticasPro$timeWorking)
+```
+
+#### Religião
+```{r}
+cbind(round(prop.table(table(praticasPro$religiao)),3))  
+```
+
+#### Contato com o tema
+```{r}
+cbind(round(prop.table(table(praticasPro$contato.tema)),3))
+```
+
+#### Lida com
+```{r}
+cbind(round(prop.table(table(praticasPro$lida.com)),2)) 
+```
+
+#### Onde lida com
+```{r}
+cbind(round(prop.table(table(praticasPro$onde.lida.com)),2))
+```
+
+
+### Apresentação dos itens da escala
+
+```{r results='asis'}
+questions  <- read.csv("praticasprofissionais_questions.csv", col.names = "Itens", header=TRUE)
+print(xtable(questions), type="html")
+```
+
+### Itens
+
+```{r}
+fullScale  <- praticasPro[,21:63] # Versão completa da escala
+describe(fullScale, skew=FALSE)
+```
+
+
+### Correlation Matrix
+```{r fig.width=20, fig.height=22}
+cor.plot(cor(fullScale, method="kendal", use="complete.obs"), numbers= TRUE)
+```
+
+
+### Crobach's alfa
+
+Método - O alfa de Cronbach foi utilizado como um indicador da confiabilidade da escala.
+
+Resultado - O valor alfa de Cronbach para escala com 43 itens foi de 0.90 (IC_{95%} = 0,88 - 0,93).
+
+Referência - Cronbach, L.J. (1951) Coefficient alpha and the internal strucuture of tests. Psychometrika, 16, 297-334.
+
+
+```{r}
+alpha(fullScale)
+```
+
+Análise Fatorial
+----------------------
+
+O índice de adequação da amostra de Kaiser-Meyer-Olkin (KMO) foi de 0.81. considerada como boa (procurar ref). O teste de Bartlett apontou para fatorabilidade da escala. K^2 = 300.94, p < 0,001. 
+
+
+### KMO - Adequação da amostra
+```{r}
+KMO(fullScale)
+```
+
+
+Referências
+
+* H.~F. Kaiser. (1970) A second generation little jiffy. Psychometrika, 35(4):401–415. 
+* Bartlett, M. S. (1937). Properties of sufficiency and statistical tests. Proceedings of the Royal Society of London Series A 160, 268–282.
+
+Usando o grafico de autovalores, foram retidos dois fatores. Como criterio, escolheu-se o o ponto de quebra do *Scree plot*. 
+
+### Esfericidade
+```{r}
+bartlett.test(fullScale)
+```
+
+### Análise paralela
+```{r fig.width=10, fig.height=11}
+fa.parallel(fullScale, fm="minres", fa="fa", main="")
+```
+
+### EFA - Principal component analysis
+
+O número de fatores a serem retidos foi determinado pela análise do gráfico *Scree Plot*. Como é esperado que os fatores sejam correlacionados por serem habilidades semelhantes, foi utilizada uma rotação oblíqua *Oblimin* e o método de fatoração foi o de *mínimos resíduos*. Devido à natureza politômica dos itens, a análise fatorial exploratória foi realizada com correlações policóricas.
+
+A porcentagem de variância explicada foi de 33%.  A correlação entre os fatores foi de 0,45.
+
+### Tabela com itens
+
+```{r}
+faAll <- fa.poly(fullScale, nfactors = 2, rotate = "oblimin", fm="minres")
+print.psych(faAll, digits = 2, cut = .3)
+```
+
+### Versão com itens com boas cargas fatoriais
+```{r}
+v1Scale  <- subset(fullScale, select = -c(3,8,15,31,36,41)) # Criação da escala com itens de cargas fatoriais boas
+faAll <- fa.poly(v1Scale, nfactors = 2, rotate = "oblimin", fm="minres")
+print.psych(faAll, digits=2, cut=0.3)
+```
+
+#### Diagrama com fatores
+```{r fig.width=20, fig.height=22}
+fa.diagram(faAll)
+```
