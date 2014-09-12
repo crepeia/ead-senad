@@ -35,27 +35,26 @@ socialPer  <- subset(socialPer, subset=socialPer$termo=="Sim" & socialPer$estado
 
 #### Idade
 ```{r}
-socialPer$idade <- gsub("[A-z]", "", socialPer$idade)
-socialPer[28,9]  <- "42"
-socialPer$idade  <- as.numeric(socialPer$idade)
+idade <- gsub("[A-z]", "", socialPer$idade)
+socialPer$idade <- as.numeric(idade)
 summary(socialPer$idade) # all
 sd(socialPer$idade, na.rm = TRUE)
-by(socialPer$age, socialPer$sexo, describe) #by sex
+by(socialPer$idade, socialPer$sexo, describe) #by sex
 ```
 
 #### Sexo
 ```{r}
-cbind(round(prop.table(table(socialPer$sexo)),2))
+cbind(round(prop.table(table(socialPer$sexo)),3))
 ```
 
 #### Escolaridade
 ```{r}
-cbind(round(prop.table(table(socialPer$escolaridade)),2))
+cbind(round(prop.table(table(socialPer$escolaridade)),3))
 ```
 
 #### Estado Civil
 ```{r}
-cbind(round(prop.table(table(socialPer$estadocivil)),2))
+cbind(round(prop.table(table(socialPer$estadocivil)),3))
 ```
 
 #### Tempo de serviço
@@ -128,7 +127,7 @@ bartlett.test(fullScale)
 
 ### Cattel's scree
 ```{r fig.width=10, fig.height=11}
-fa.parallel(fullScale, fm="minres", fa="both", ylabel="Eigenvalues", show.legend=FALSE) # yields 4 components
+fa.parallel(fullScale, fm="minres", fa="fa", ylabel="Eigenvalues", show.legend=FALSE) # yields 4 components
 ```
 
 ### EFA - Principal component analysis
