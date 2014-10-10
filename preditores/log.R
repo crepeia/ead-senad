@@ -40,6 +40,8 @@ logData$time  <- as.Date(logData$hora, "%d %m %Y, %H:%M")
 # Create var without the url path
 logData$activity <- gsub("\\s\\(.*\\)", "", logData$action)
 
+head(logData$action)
+
 
 # QUESTION 1 - IS THE PLATFORM ACTIVITY CHANGING OVER TIME - MONTHS?
 
@@ -48,7 +50,7 @@ table(months(logData$hora))
 
 #Graph
 graphAccess  <- ggplot(logData, aes(logData$hora))
-graphAccess + geom_density(colour = "blue", fill="blue") + labs(x = "Month", y = "Frequency") 
+graphAccess + geom_density(colour = "pink", fill="pink") + labs(x = "Month", y = "Frequency") 
 
 # QUESTION 2 - IS THE PLATFORM ACTIVITY CHANGING OVER TIME - WEEKDAYS?
 
@@ -70,7 +72,7 @@ tapply(logData$activity, logData$fullname, table, simplify=FALSE)
 
 # QUESTION 5 - WHAT ARE THE MOST ACTIVE CLASSES?
 
-activeClasses  <- tapply(logData$activity, logData$turma, table, simplify=FALSE)
+activeClasses  <- tapply(logData$activity, logData$fullname, table, simplify=FALSE)
 df <- ldply(activeClasses, data.frame)
 
 dfCast  <- dcast(df, .id ~ Var1)
@@ -94,5 +96,5 @@ dfUltimoAcesso <- as.data.frame(ultimoAcesso)
 table(dfUltimoAcesso$ultimoAcesso > "2014-08-18")
 write.csv(dfUltimoAcesso, "ultimoAcesso.csv")
 
-
+write.csv(dfCast, "ultimoAcesso.csv")
 
