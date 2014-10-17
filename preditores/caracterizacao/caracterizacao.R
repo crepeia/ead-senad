@@ -40,7 +40,7 @@ notas  <- read.csv("caracterizacao/notas.csv")
 ####################################################################################################
 
 # Abrir banco de dados
-socioDemo  <- read.csv("../praticas-profissionais/praticasprofissionais_df.csv")
+socioDemo  <- read.csv("praticas-profissionais/praticasprofissionais_df.csv")
 
 ########################################
 # CARACTERÍSTICAS SOCIODEMOGRAFICAS ----
@@ -108,7 +108,7 @@ porcentagem(socioDemo$part.outrocurso)
 ########################################
 
 ## Ler banco com notas
-notas  <- read.csv("caracterizacao/notas.csv", dec = ",", na.strings=c("NA","-"))
+notas  <- read.csv("preditores/caracterizacao/notas.csv", dec = ",", na.strings=c("NA","-"))
 
 # Listar variáveis com notas
 summary(notas[,7:36])
@@ -130,10 +130,14 @@ forum  <- lapply(notasForum, is.na)
 forumTeste <- lapply(forum, table)
 dfForum <- ldply(forumTeste)
 colnames(dfForum)  <- c("forum", "atividade", "falta")
+
+dfForum[1,1] <- "01"; dfForum[2,1] <- "02"; dfForum[3,1] <- "03"; dfForum[4,1] <- "04"; dfForum[5,1] <- "05"; dfForum[6,1] <- "06"; dfForum[7,1] <- "07";dfForum[8,1] <- "08";dfForum[9,1] <- "09";dfForum[10,1] <- "10";dfForum[11,1] <- "11";dfForum[12,1] <- "12";dfForum[13,1] <- "13";dfForum[14,1] <- "14";dfForum[15,1] <- "15";
+
 dfForum$forum  <- as.factor(dfForum$forum)
 
 # Grafico
 plot(dfForum[,2], xlab="Fóruns", ylab="Número de acessos", type = "l", col = "blue", xlim=c(1,15))
 
-
+# Bar plot - ggplot2
+ggplot(data = dfForum, aes(x = forum, y = atividade)) + geom_bar(stat="identity", fill="navy") + xlab("Fórum") + ylab("Participação") + theme_bw()
 
