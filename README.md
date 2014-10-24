@@ -55,6 +55,22 @@ Instruções para usar o github
 2. Usar o comando 'git clone 'linkdorepositorio'
 
 
+## Fazer modificação
+
+1. Abrir o programa gitbash,
+2. Navegar até a pasta do projeto
+3. *Adicionar* modificações - ' git add -A '
+4. *Comentar* as modificações - ' git commit -m 'inserir comentário aqui' '
+
+## Enviar modificações (lembre-se de fazer o passo anterior)
+1. *Enviar* as alterações - ' git push '
+
+## Fazer o download das alterações quando você tem a pasta
+
+1. *Receber* 'git pull'
+
+
+
 
 
 
