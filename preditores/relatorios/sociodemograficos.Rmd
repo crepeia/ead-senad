@@ -1,0 +1,127 @@
+---
+title: "Análise sociodemográfico"
+author: "Érika e Henrique"
+date: "30-10-2014"
+output: html_document
+---
+
+# Introdução
+Este é o relatório do questionário sóciodemográfico. 
+
+# Banco de dados
+O banco usado para descrever a amostra é o da Jéssica.
+Para avaliação do curso, é o da Érika.
+
+```{r}
+# Ler bancos de dados
+## Jéssica
+socioDemo  <- read.csv("../caracterizacao/sociodemografico.csv", na.strings="-")
+## Érika
+ativCol  <- read.csv("../caracterizacao/atividadesColaborativas-respostas.csv", dec = ",", na.strings="-")
+
+# Selecionar somente aqueles que consentiram participar na pesquisa
+## Jéssica
+socioDemo  <- subset(socioDemo, socioDemo$termo == "Sim")
+## Érika
+ativCol  <- subset(ativCol, ativCol$termo == "Sim")
+
+```
+
+Abaixo, criei uma função para deixar os resultados visualmente melhores.
+
+```{r}
+# Função porcentagem
+
+porcentagem <- function(var){
+  a  <- round(prop.table(table(var)),3)*100
+  print(cbind(sort(a, decreasing = TRUE)))
+}
+
+```
+
+# Análise dos dados
+
+## Sociodemográfico
+
+###  Idade
+```{r}
+# Idade
+## Recodificar variável para numérica
+socioDemo$age  <- as.numeric(as.character(socioDemo$idade))
+## Excluir usuários que inseriram o ano de nascimento
+socioDemo$age <- ifelse(socioDemo$age > 70, NA, socioDemo$age)
+
+## Média de idade
+mean(socioDemo$age, na.rm = TRUE)
+## Desvio Padrão 
+sd(socioDemo$age, na.rm = TRUE)
+```
+
+### Sexo 
+```{r}
+## Sexo
+porcentagem(socioDemo$sexo)
+```
+
+### Escolaridade
+```{r}
+## Escolaridade
+porcentagem(socioDemo$escolaridade)
+```
+
+### Ocupaçao
+```{r}
+## Ocupaçao
+porcentagem(socioDemo$ocupacao)
+```
+
+
+### Contato Anterior
+```{r}
+## Contato Anterior
+porcentagem(socioDemo$contatoanterior)
+```
+
+### Onde lida
+```{r}
+## Onde lida
+porcentagem(socioDemo$lida.onde)
+```
+
+### Motivo Curso
+```{r}
+## Motivo Curso
+porcentagem(socioDemo$motivocurso)
+```
+
+## Satisfação do curso
+
+```{r}
+### Material Didático
+porcentagem(ativCol$material)
+```
+
+```{r}
+### Prazo Atividades
+porcentagem(ativCol$flexprazo)
+```
+
+```{r}
+### Interação entre pares
+porcentagem(ativCol$interacaocol)
+```
+
+```{r}
+### Organização curso
+porcentagem(ativCol$organizado)
+```
+
+```{r}
+### O quão importante é o auxílio de seu tutor
+porcentagem(ativCol$freqauxitutor)
+```
+
+```{r}
+### Participação em outro curso
+porcentagem(ativCol$partoutrocurso)
+```

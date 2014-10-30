@@ -1,3 +1,10 @@
+# A fazer
+
+## Apresentar melhor os resultados da análise de agrupamentos.
+## Comparar os mesmos sujeitos pré e pós.
+## Analisar as frequências de cada categoria nos periódos pré e pós.
+
+
 # Pacotes
 library("tm")       # Trabalhar com strings
 library("psych")    # Função describe
@@ -42,7 +49,7 @@ multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
 }
 
 # Abrir banco de dados de atividades ----
-sociodemografico  <- read.csv("preditores/caracterizacao/sociodemografico.csv")
+sociodemografico  <- read.csv("preditores/caracterizacao/sociodemografico.csv", na.strings="-")
 
 ## Retirar questões inuteis
 sociodemografico <- sociodemografico[, -c(40:86)]
@@ -51,12 +58,17 @@ sociodemografico <- sociodemografico[, -c(40:86)]
 sociodemografico$nomecompleto <- paste(sociodemografico$nome, sociodemografico$sobrenome)
 sociodemografico$nomecompleto <- stripWhitespace(tolower(sociodemografico$nomecompleto))
 
-
 ## Criar banco somente com pessoas que consentiram participar
 sociodemografico  <- subset(sociodemografico, sociodemografico$termo == "Sim")
 
 ## Abrir banco de logs Tratados
-dfCast <- read.csv("caracterizacao/logsTratados.csv")
+dfCast <- read.csv("preditores/caracterizacao/logsTratados.csv")
+
+## Abrir banco de atividades colaborativas
+ativCol  <- read.csv("preditores/caracterizacao/atividadesColaborativas-respostas.csv", dec = ",", na.strings="-")
+
+## Criar banco somente com pessoas que consentiram participar
+ativCol  <- subset(ativCol, ativCol$termo == "Sim")
 
 # Mesclar bancos ----
 dfCast$.id  <- as.character(dfCast$.id)
@@ -68,7 +80,7 @@ sociodemografico$nomecompleto  <- as.character(sociodemografico$nomecompleto)
 bancoFinal  <- merge(sociodemografico, dfCast, by.x = "nomecompleto", by.y = "nomecompleto")
 
 ## Notas
-notas  <- read.csv("caracterizacao/notas.csv")
+notas  <- read.csv("preditores/caracterizacao/notas.csv")
 
 
 ####################################################################################################
@@ -77,7 +89,10 @@ notas  <- read.csv("caracterizacao/notas.csv")
 ####################################################################################################
 
 # Abrir banco de dados
-socioDemo  <- read.csv("praticas-profissionais/praticasprofissionais_df.csv")
+socioDemo  <- read.csv("preditores/caracterizacao/sociodemografico.csv", na.strings="-")
+
+# Criar banco somente com pessoas que consentiram participar
+socioDemo  <- subset(socioDemo, socioDemo$termo == "Sim")
 
 ########################################
 # CARACTERÍSTICAS SOCIODEMOGRAFICAS ----
@@ -123,22 +138,22 @@ porcentagem(socioDemo$motivocurso)
 ########################################
 
 ## Material Didático
-porcentagem(socioDemo$materialdidatico)
+porcentagem(ativCol$material)
 
 ## Prazo Atividades
-porcentagem(socioDemo$prazoatividades)
+porcentagem(ativCol$flexprazo)
 
 ## Interação entre pares
-porcentagem(socioDemo$interacaopares)
+porcentagem(ativCol$interacaocol)
 
 ## Organização curso
-porcentagem(socioDemo$organizacaocurso)
+porcentagem(ativCol$organizado)
 
-## Importância da ajuda do tutor
-porcentagem(socioDemo$import.ajud.tutor)
+## O quão importante é o auxílio de seu tutor
+porcentagem(ativCol$freqauxitutor)
 
 ## Participação em outro curso
-porcentagem(socioDemo$part.outrocurso)
+porcentagem(ativCol$partoutrocurso)
 
 ########################################
 # NOTAS                             ----
@@ -179,7 +194,7 @@ colnames(dfForum)  <- c("forum", "atividade", "falta")
 dfForum[1,1] <- "01"; dfForum[2,1] <- "02"; dfForum[3,1] <- "03"; dfForum[4,1] <- "04"; dfForum[5,1] <- "05"; dfForum[6,1] <- "06"; dfForum[7,1] <- "07";dfForum[8,1] <- "08";dfForum[9,1] <- "09";dfForum[10,1] <- "10";dfForum[11,1] <- "11";dfForum[12,1] <- "12";dfForum[13,1] <- "13";dfForum[14,1] <- "14";dfForum[15,1] <- "15";
 dfForum$forum  <- as.factor(dfForum$forum)
 
-# Gráfico de participação nos fórusn - Bar plot - ggplot2
+# Gráfico de participação nos fóruns - Bar plot - ggplot2
 graphForuns <- ggplot(data = dfForum, aes(x = forum, y = atividade)) + geom_bar(stat="identity", fill = "#CCCCCC", colour="#666666") + xlab("Fórum") + ylab("Participação") + coord_cartesian(ylim=c(0,4500)) + theme_bw() + theme(axis.title.x = element_text(face="bold", size=14), axis.text.x  = element_text(vjust=0.5, size=14), axis.title.y = element_text(face="bold", size=14), axis.text.y  = element_text(vjust=0.5, size=14))
 
 # Atividades Colaborativas ------
@@ -187,7 +202,7 @@ graphForuns <- ggplot(data = dfForum, aes(x = forum, y = atividade)) + geom_bar(
 
 ## Selecionar somente os foruns - Faltam questões ainda: Recuperação dos módulos 3 e 4.
 ## Dúvida - O que são as recuperações gerais?
-notasAticol <- notas[, c("ativcolm1", "ativcolm1r","ativcolm2", "ativcolm2r", "ativcolm3", "ativcolm4")]
+notasAticol <- notas[, c("ativcolm1", "ativcolm2","ativcolm1r", "ativcolm2r", "ativcolm3r", "ativcolm4")]
 
 ## Substituir nota maior de quem fez recuperação
 
@@ -199,7 +214,7 @@ notasAticol$ativcolm2 <- ifelse(is.na(notasAticol$ativcolm2r), notasAticol$ativc
 ### Implementar para atividades 3 e 4
 
 ### Gráfico de boxplots com as notas
-notasAticol <- notasAticol[, c("ativcolm1", "ativcolm2", "ativcolm3", "ativcolm4")]
+notasAticol <- notasAticol[, c("ativcolm1", "ativcolm2", "ativcolm3r", "ativcolm4")]
 
 # Preparacao dos dados para realizacao do grafico
 ## Avaliar quem fez a atividade
@@ -224,8 +239,18 @@ graphAtiv <- ggplot(data = dfAticol, aes(x = Atividade, y = Participou)) + geom_
 # Questionários            ------
 # ===============================
 
+names(notas)
 
 # Gráfico final            ------
 # ===============================
 
 multiplot(graphForuns, graphAtiv, cols=2)
+
+
+
+# O que falta fazer        ------
+# ===============================
+
+# Atualizar o banco notas tanto para o fórum quanto para atividades colaborativas
+# Fazer análise do questionário
+
