@@ -14,6 +14,8 @@ logData  <- read.delim("log.txt", col.names= c("turma", "curso", "hora", "ip",  
 # Remove curso var
 logData  <- logData[, -2]
 
+head(logData)
+
 ### Variable Date
 # Convert PT months into numbers
 logData$hora  <- gsub('dezembro', "12", logData$hora)
@@ -39,9 +41,6 @@ logData$time  <- as.Date(logData$hora, "%d %m %Y, %H:%M")
 ### Variable Activity
 # Create var without the url path
 logData$activity <- gsub("\\s\\(.*\\)", "", logData$action)
-
-head(logData$action)
-
 
 # QUESTION 1 - IS THE PLATFORM ACTIVITY CHANGING OVER TIME - MONTHS?
 
@@ -78,8 +77,6 @@ df <- ldply(activeClasses, data.frame)
 dfCast  <- dcast(df, .id ~ Var1)
 names(dfCast)
 head(dfCast)
-
-Column <- gvisColumnChart()
 
 barplot(sort(table(logData$turma), decreasing = TRUE), col = "blue", ylim = c(0,40000))
 abline(h = mean(table(logData$turma)), colour="blue")
