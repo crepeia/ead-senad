@@ -1,7 +1,7 @@
 # Libraries ----
 library(car) # Function Recode
 library(psych) # Function Describe
-library(mirt)
+library(mirt)  #Function bfactor
 
 # Import data ----
 
@@ -69,7 +69,7 @@ describe(fullScale)
 round(cor(fullScale, method="kendal", use="complete.obs"),2) # kendall correlation coef
 cor.plot(cor(fullScale, method="kendal", use="complete.obs"), numbers= TRUE)
 
-# alpha
+# alpha estimate the reliability of a questionnaire.
 cronbach  <- alpha(fullScale)
 cronbach
 
@@ -77,7 +77,8 @@ cronbach
 
 ## All items ----
 
-## KMO
+## KMO  is a statistic that indicates the ratio of the data 
+#  variance that can be considered common to all variables
 KMO(fullScale)
 
 # Barlett test of homogeneity
@@ -88,35 +89,54 @@ fa.parallel(fullScale, fm="minres", fa="both", ylabel="Eigenvalues") # yields 4 
 VSS(fullScale, rotate="none") # VSS = 2; MAP = 4 factors
 
 # Factor Analysis using polychoric correlations
+library(mvtnorm)
 faAll <- fa.poly(fullScale, nfactors = 2, rotate = "oblimin", fm="minres")
-faAll$fa
+print.psych(faAll, digits=2, cut=0.4)
 
-# Diagram
-fa.diagram(faAll)
+#RESULTADOS
+#negativos 1,8,18,24,25,28,33,34,35,36
 
-
-# Items per factor #
-# MR1  : 9,10,11,12,14,15,16,19,20,21,22,26,27,29,30,31,32,-35,-36
-# MR2  : -1,2,3,4,5,6,7,-8,13,17,-18,23,-24,-25,-28,-33,-34,37
 
 # Recode negative items
 for (i in c(1,8,18,24,25,28,33,34,35,36)){
   fullScale[,i]   <-  Recode(fullScale[,i], "5=1 ; 4=2 ; 3 = 3; 2 = 4; 1 = 5; else = NA")                         
 }
+print.psych(faAll,digits=2,cut=0.4)
 
-# Factor Analysis using polychoric correlations
-faAll <- fa.poly(fullScale, nfactors = 2, rotate = "oblimin", fm="minres")
-faAll$fa
+#sem factor: 11,25
+#removendo---
+shortScale  <- fullScale[, -c(11,25)]
+fashort<- fa.poly(shortScale, nfactors = 2, rotate = "oblimin", fm="minres")
+print.psych(fashort,digits=2,cut=0.4)
+cbind(names(shortScale))
+
+#sem factor: 18
+shortScale2<-shortScale[,-c(17)]
+fashort2<-fa.poly(shortScale2,nfactors = 2,rotate = "oblimin",fm="minres")
+print.psych(fashort2,digits=2,cut=0.4)
+
+#sem factor:1
+shortScale3<-shortScale2[,-c(1)]
+fashort3<-fa.poly(shortScale3,nfactors =2, rotate ="oblimin",fm="minres")
+print.psych(fashort3,digits=2,cut=0.4)
+cbind(names(shortScale3))
+
+# Cronbach's alpha
+alpha(shortScale3)
 
 # Diagram
-fa.diagram(faAll)
+fa.diagram(shortScale3)
 
+#------------------------------------------------------------------------------
 
 # CFA ---- Not implemented yet.
+cfa <- bfactor(shortScale3, c(2,2,2,2,2,2,2,1,1,1,2,1,1,1,2,1,1,1,1,2,2,1,1,2,1,1,1,1,2,2,1,1,2))
+
+
 ### Exploratory factor analysis
 ### Bifactor Model
 library(mirt)
-factors  <- c(2,2,2,2,2,2,2,2,1,1,1,1,2,1,1,1,2,2,1,1,1,1,2,2,2,1,1,2,1,1,1,1,2,2,1,1,2) # based on efa scores
-mbi  <- bfactor(fullScale, factors, verbose = FALSE)
+factors  <- c(2,2,2,2,2,2,2,2,1,1,1,2,1,1,1,2,2,2,1,1,1,1,2,2,2,1,1,2,1,1,1,1,2,2,1,1,2) # based on efa scores
+mbi  <- bfactor(shortScale, factors, verbose = FALSE)
 summary(mbi)
 residuals(mbi)
