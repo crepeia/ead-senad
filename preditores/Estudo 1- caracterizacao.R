@@ -153,10 +153,11 @@ porcentagem(ativCol$partoutrocurso)
 ########################################
 
 ## Ler banco com notas
-notas  <- read.csv("preditores/caracterizacao/notas.csv", dec = ",", na.strings=c("NA","-"))
+notas  <- read.csv("preditores/caracterizacao/notas.csv", dec = ".", na.strings=c("NA","-"))
 
+names(notas)
 # Listar variáveis com notas
-summary(notas[,7:36])
+summary(notas[,2:29])
 
 # Fóruns ------
 # =============
@@ -188,14 +189,14 @@ dfForum[1,1] <- "01"; dfForum[2,1] <- "02"; dfForum[3,1] <- "03"; dfForum[4,1] <
 dfForum$forum  <- as.factor(dfForum$forum)
 
 # Gráfico de participação nos fóruns - Bar plot - ggplot2
-graphForuns <- ggplot(data = dfForum, aes(x = forum, y = atividade)) + geom_bar(stat="identity", fill = "#CCCCCC", colour="#666666") + xlab("Fórum") + ylab("Participação") + coord_cartesian(ylim=c(0,4500)) + theme_bw() + theme(axis.title.x = element_text(face="bold", size=14), axis.text.x  = element_text(vjust=0.5, size=14), axis.title.y = element_text(face="bold", size=14), axis.text.y  = element_text(vjust=0.5, size=14))
+graphForuns <- ggplot(data = dfForum, aes(x = forum, y = atividade)) + geom_bar(stat="identity", fill = "#CCCCCC", colour="#666666") + xlab("Fórum") + ylab("Participação") + coord_cartesian(ylim=c(0,4500)) + theme_bw() + theme(axis.title.x = element_text(face="bold", size=12), axis.text.x  = element_text(vjust=0.5, size=8), axis.title.y = element_text(face="bold", size=12), axis.text.y  = element_text(vjust=0.5, size=12))
 
 # Atividades Colaborativas ------
 # ===============================
 
 ## Selecionar somente os foruns - Faltam questões ainda: Recuperação dos módulos 3 e 4.
 ## Dúvida - O que são as recuperações gerais?
-notasAticol <- notas[, c("ativcolm1", "ativcolm2","ativcolm1r", "ativcolm2r", "ativcolm3r", "ativcolm4")]
+notasAticol <- notas[, c("ativcolm1", "ativcolm2","ativcolm1r", "ativcolm2r", "ativcolm3", "ativcolm4")]
 
 ## Substituir nota maior de quem fez recuperação
 
@@ -207,7 +208,7 @@ notasAticol$ativcolm2 <- ifelse(is.na(notasAticol$ativcolm2r), notasAticol$ativc
 ### Implementar para atividades 3 e 4
 
 ### Gráfico de boxplots com as notas
-notasAticol <- notasAticol[, c("ativcolm1", "ativcolm2", "ativcolm3r", "ativcolm4")]
+notasAticol <- notasAticol[, c("ativcolm1", "ativcolm2", "ativcolm3", "ativcolm4")]
 
 # Preparacao dos dados para realizacao do grafico
 ## Avaliar quem fez a atividade
@@ -226,18 +227,39 @@ colnames(dfAticol)  <- c("Atividade", "Participou", "Nparticipou")
 dfAticol[1,1] <- "01"; dfAticol[2,1] <- "02"; dfAticol[3,1] <- "03"; dfAticol[4,1] <- "04"
 
 # Gráfico de participação nos atividades - Bar plot - ggplot2
-graphAtiv <- ggplot(data = dfAticol, aes(x = Atividade, y = Participou)) + geom_bar(stat="identity", fill = "#CCCCCC", colour="#666666") + xlab("Atividade Colaborativa") + ylab("") + coord_cartesian(ylim=c(0,4500)) + theme_bw() + theme(axis.title.x = element_text(face="bold", size=14), axis.text.x  = element_text(vjust=0.5, size=14), axis.title.y = element_text(face="bold", size=14), axis.text.y  = element_text(vjust=0.5, size=14))
-
+graphAtiv <- ggplot(data = dfAticol, aes(x = Atividade, y = Participou)) + geom_bar(stat="identity", fill = "#CCCCCC", colour="#666666") + xlab("Atividade Colaborativa") + ylab("") + coord_cartesian(ylim=c(0,4500)) + theme_bw() + theme(axis.title.x = element_text(face="bold", size=12), axis.text.x  = element_text(vjust=0.5, size=12), axis.title.y = element_text(face="bold", size=12), axis.text.y  = element_text(vjust=0.5, size=12))
 
 # Questionários            ------
 # ===============================
 
-names(notas)
+## Selecionar variáveis dos questionários
+quest <- notas[, c("quesm1","quesm2","quesm3")]
+
+## Criar porcentagens
+# round(sapply(quest, mean, na.rm=TRUE),2)
+
+## Tabular is.na
+questTeste  <- lapply(quest, is.na)
+
+## Tabular notas
+questTeste <- lapply(questTeste, table)
+ 
+## Criar dataframe
+dfQuest <- ldply(questTeste)
+
+## Nomes para as variáeveis do banco
+colnames(dfQuest)  <- c("Questionario", "Participou", "Nparticipou")
+
+## Atribuir bons labels às atividades colaborativas
+dfQuest[1,1] <- "01"; dfQuest[2,1] <- "02"; dfQuest[3,1] <- "03"
+
+# Gráfico de participação nos atividades - Bar plot - ggplot2
+graphQuest <- ggplot(data = dfQuest, aes(x = Questionario, y = Participou)) + geom_bar(stat="identity", fill = "#CCCCCC", colour="#666666") + xlab("Questionário") + ylab("") + coord_cartesian(ylim=c(0,4500)) + theme_bw() + theme(axis.title.x = element_text(face="bold", size=12), axis.text.x  = element_text(vjust=0.5, size=12), axis.title.y = element_text(face="bold", size=12), axis.text.y  = element_text(vjust=0.5, size=12))
 
 # Gráfico final            ------
 # ===============================
 
-multiplot(graphForuns, graphAtiv, cols=2)
+multiplot(graphForuns, graphAtiv, graphQuest, cols=3)
 
 
 
@@ -246,4 +268,4 @@ multiplot(graphForuns, graphAtiv, cols=2)
 
 # Atualizar o banco notas tanto para o fórum quanto para atividades colaborativas
 # Fazer análise do questionário
-
+names(notas)

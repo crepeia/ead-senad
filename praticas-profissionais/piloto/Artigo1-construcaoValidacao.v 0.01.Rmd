@@ -1,0 +1,69 @@
+---
+title: "Relatório da Escala de Crenças e Práticas"
+author: "Guilherme e Jéssica"
+date: "13-11-2014"
+output:
+  html_document:
+    highlight: tango
+    number_sections: yes
+    theme: spacelab
+    toc: yes
+---
+
+# Introdução
+
+Este relatório objetiva apresentar as análises introdutória do instrumento "Escala de práticas na prevenção do uso de álcool e outras drogas", que está em fase de desenvolvimento pelo [Centro de Referência em Pesquisa, Intervenção e Avaliação em Álcool e Outras Drogas](http://www.ufjf.br/crepeia/).
+
+O instrumento foi validado para educadores.. O objetivo da pesquisa é oferecer uma medida confiável para avaliação das crenças e práticas de educadores de um curso à distância oferecido pela Secretaria Nacional de Políticas sobre Drogas para aproximadamente 10.000 educadores dos estados de Minas Gerais, Rio de Janeiro e Paraná.
+
+Durante todo o processo de desenvolvimento, foram utilizadas ferramentas de código-aberto, para facilitar o re-uso das técnicas e procedimentos desenvolvidos. Todo conteúdo do instrumento e de suas etapas estará disponível para o público no repositório (http://github.com/crepeia/ead-senad). Atualmente, o projeto está hospedado no repositório (http://github.com/henriquepgomide/ead-senad). 
+
+Neste relatório são apresentadas, análises da escala com base em uma amostra de 136 educadores-tutores do curso. As análises foram conduzidas através da linguagem de programação R usando os pacotes *car* e *psych*. 
+
+* John Fox and Sanford Weisberg (2011). An {R} Companion to Applied Regression, Second Edition. Thousand Oaks CA: Sage. URL: http://socserv.socsci.mcmaster.ca/jfox/Books/Companion
+
+* Revelle, W. (2014) psych: Procedures for Personality and Psychological Research, Northwestern University, Evanston, Illinois, USA, http://CRAN.R-project.org/package=psych Version = 1.4.8.
+
+
+
+## Banco de Dados
+
+O banco de dados da pesquisa, pode ser obtido no seguinte endereço: (https://github.com/crepeia/ead-senad/blob/master/praticasprofissionais_df.csv).
+
+Resultados
+-------------------------
+
+Os resultados são apresentados por tópicos: caracterização da amostra, avaliação descritiva da escala e análise fatorial exploratória.
+
+
+### Bibliotecas
+```{r}
+library(car) # Function Recode
+library(psych) # Function Describe
+library(mirt)  #Function bfactor
+library(ggplot2) # Fancy Charts
+## Import dataframe
+praticasPro  <- read.csv("praticasprofissionais_df.csv")
+## Sum scales to remove NA's
+praticasPro$scaleSum  <- rowSums(praticasPro[,32:68])
+## Subset completed observations and consented participation
+praticasPro  <- subset(praticasPro, subset=praticasPro$termo=="Sim" & praticasPro$estado=="Finalizadas" & !is.na(praticasPro$scaleSum))
+```
+
+### Sócio-demográficas
+
+#### Idade
+```{r}
+## Age
+### Clean data
+praticasPro$idade  <- as.numeric(as.character(praticasPro$idade))
+praticasPro$idade[praticasPro$idade < 18 | praticasPro$idade > 68 ]  <- NA
+### Descriptives
+summary(praticasPro$idade) # all
+by(praticasPro$idade, praticasPro$sexo, describe) #by sex
+
+```
+
+```{r}
+ggplot(praticasPro, aes(x=idade)) + geom_histogram(aes(fill = ..count..), binwidth = 6) + xlab("Idade") + ylab("Frequência") + scale_fill_continuous(name="Frequency")
+```
