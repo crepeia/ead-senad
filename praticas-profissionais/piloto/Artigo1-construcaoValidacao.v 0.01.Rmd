@@ -20,6 +20,8 @@ Durante todo o processo de desenvolvimento, foram utilizadas ferramentas de cód
 
 Neste relatório são apresentadas, análises da escala com base em uma amostra de 136 educadores-tutores do curso. As análises foram conduzidas através da linguagem de programação R usando os pacotes *car* e *psych*. 
 
+* R Core Team (2014). R: A language and environment for statistical computing. R Foundation for Statistical Computing, Vienna, Austria. URL http://www.R-project.org/.
+
 * John Fox and Sanford Weisberg (2011). An {R} Companion to Applied Regression, Second Edition. Thousand Oaks CA: Sage. URL: http://socserv.socsci.mcmaster.ca/jfox/Books/Companion
 
 * Revelle, W. (2014) psych: Procedures for Personality and Psychological Research, Northwestern University, Evanston, Illinois, USA, http://CRAN.R-project.org/package=psych Version = 1.4.8.
@@ -28,7 +30,7 @@ Neste relatório são apresentadas, análises da escala com base em uma amostra 
 
 ## Banco de Dados
 
-O banco de dados da pesquisa, pode ser obtido no seguinte endereço: (https://github.com/crepeia/ead-senad/blob/master/praticasprofissionais_df.csv).
+O banco de dados da pesquisa, pode ser obtido no seguinte endereço: (https://github.com/crepeia/ead-senad/blob/master/praticas-profissionais/piloto/praticasprofissionais_df.csv).
 
 Resultados
 -------------------------
@@ -40,14 +42,16 @@ Os resultados são apresentados por tópicos: caracterização da amostra, avali
 ```{r}
 library(car) # Function Recode
 library(psych) # Function Describe
-library(mirt)  #Function bfactor
 library(ggplot2) # Fancy Charts
+
 ## Import dataframe
 praticasPro  <- read.csv("praticasprofissionais_df.csv")
+
 ## Sum scales to remove NA's
-praticasPro$scaleSum  <- rowSums(praticasPro[,32:68])
+praticasPro$scaleSum  <- rowSums(praticasPro[,21:63])
+
 ## Subset completed observations and consented participation
-praticasPro  <- subset(praticasPro, subset=praticasPro$termo=="Sim" & praticasPro$estado=="Finalizadas" & !is.na(praticasPro$scaleSum))
+praticasPro  <- subset(praticasPro, subset=praticasPro$termo=="Sim" & !is.na(praticasPro$scaleSum))
 ```
 
 ### Sócio-demográficas
@@ -65,5 +69,39 @@ by(praticasPro$idade, praticasPro$sexo, describe) #by sex
 ```
 
 ```{r}
-ggplot(praticasPro, aes(x=idade)) + geom_histogram(aes(fill = ..count..), binwidth = 6) + xlab("Idade") + ylab("Frequência") + scale_fill_continuous(name="Frequency")
+fullScale  <- praticasPro[,21:63]
+# descriptives
+describe(fullScale)
+
+## KMO
+KMO(fullScale)
+
+# Barlett test of homogeneity
+bartlett.test(fullScale)
+
+# Defining factors
+auto  <- fa.parallel(fullScale, fm="minres", fa="both", ylabel="Eigenvalues") # yields 4 components and 4 factors
+VSS(fullScale, rotate="none") # VSS = 2; MAP = 4 factors
+
+# Factor Analysis using polychoric correlations
+faAll <- fa.poly(fullScale, nfactors = 2, rotate = "oblimin", fm="minres")
+print.psych(faAll, digits=2, cut= .3)
+
+
+## V1 - Items with good loadings ----
+# V1 - Version
+v1Scale  <- subset(fullScale, select = -c(3,8,15,31,36,41))
+
+# Factor analysis using polychoric correlations
+fav1 <- fa.poly(v1Scale, nfactors = 2, rotate = "oblimin", fm="minres")
+print.psych(fav1, digits=2, cut=0.3)
+
+
+
+```
+
+
+```{r echo=FALSE}
+# Diagram
+fa.diagram(fav1)
 ```
