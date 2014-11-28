@@ -71,7 +71,7 @@ alpha(fullScale) # Cronbach's alpha = .91
 ## KMO
 KMO(fullScale) # KMO = .82
 
-# Bartlett test of homogeneity # OK
+# Bartlett Test # OK
 bartlett.test(fullScale)
 
 # Defining factors
