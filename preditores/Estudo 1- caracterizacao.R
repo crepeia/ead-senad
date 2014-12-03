@@ -153,7 +153,7 @@ porcentagem(ativCol$partoutrocurso)
 ########################################
 
 ## Ler banco com notas
-notas  <- read.csv("preditores/caracterizacao/notas.csv", dec = ".", na.strings=c("NA","-"))
+notas  <- read.csv("caracterizacao/notas.csv", dec = ".", na.strings=c("NA","-"))
 
 names(notas)
 # Listar variáveis com notas

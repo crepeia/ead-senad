@@ -24,7 +24,7 @@ library("ggplot2")
 
 
 # Import data file ----
-capa  <- read.table("categorizacao.csv", header = T, fill=TRUE, sep=",")
+capa  <- read.table("textMining/categorizacao.csv", header = T, fill=TRUE, sep=",")
 capa  <- capa[,-c(3,4)]
 
 # Weak points ----
@@ -38,7 +38,8 @@ corpusWeak  <- tm_map(corpusWeak, content_transformer(tolower))
 corpusWeak  <- tm_map(corpusWeak, content_transformer(removePunctuation))
 corpusWeak  <- tm_map(corpusWeak, content_transformer(removeNumbers))
 corpusWeak  <- tm_map(corpusWeak, removeWords, stopwords("portuguese"))
-corpusWeak  <- tm_map(corpusWeak, stemDocument, "portuguese")
+# corpusWeak  <- tm_map(corpusWeak, stemDocument, "portuguese")
+
 
 # Inspect corpusFrageis
 dtmWeak <- TermDocumentMatrix(corpusWeak)
@@ -65,7 +66,7 @@ mydata.df <- as.data.frame(inspect(dtm2Weak))
 mydata.df.scale <- scale(mydata.df)
 d <- dist(mydata.df.scale, method = "euclidean") # distance matrix
 fit <- hclust(d, method="ward.D")
-plot(fit, main="") # display dendogram?
+plot(fit, main="", xlab = "", ylab="") # display dendogram?
 
 groups <- cutree(fit, k=10) # cut tree into 5 clusters
 # draw dendogram with red borders around the 5 clusters
@@ -73,7 +74,6 @@ rect.hclust(fit, k=10, border="red")
 
 # Create wordcloud
 wordcloud(corpusWeak, random.order = F, min.freq = 50, colors = brewer.pal(5, "Dark2"))
-
 
 # Strenghts ----
 
@@ -86,7 +86,7 @@ corpusStrong  <- tm_map(corpusStrong, content_transformer(tolower))
 corpusStrong  <- tm_map(corpusStrong, content_transformer(removePunctuation))
 corpusStrong  <- tm_map(corpusStrong, content_transformer(removeNumbers))
 corpusStrong  <- tm_map(corpusStrong, removeWords, stopwords("portuguese"))
-corpusStrong  <- tm_map(corpusStrong, stemDocument, "portuguese")
+# corpusStrong  <- tm_map(corpusStrong, stemDocument, "portuguese")
 
 # Inspect corpusFortes
 dtmStrong <- TermDocumentMatrix(corpusStrong)
@@ -121,5 +121,3 @@ rect.hclust(fit, k=10, border="red")
 
 # Create wordcloud
 wordcloud(corpusStrong, random.order = F, min.freq = 50, colors = brewer.pal(5, "Dark2"))
-
-
