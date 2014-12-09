@@ -97,7 +97,7 @@ fa.parallel(fullScale, fm="minres", fa="both", ylabel="Eigenvalues") # yields 2 
 
 # Factor analysis using polychoric correlations
 faAll <- fa.poly(fullScale, nfactors = 2, rotate = "oblimin", fm="minres")
-print.psych(faAll, digits=2, cut=0.4)
+print.psych(faAll, digits=2)
 
 # Diagram
 fa.diagram(faAll)
@@ -111,7 +111,7 @@ fa.diagram(faAll)
 #}
 
 # Remove items with low loadings
-shortScale  <- fullScale[, -c(9,11,12,13,21,22,25,30,31,36)]
+shortScale  <- fullScale[, -c(9,11,12,13,18,21,22,25,30,31,36)]
 
 cbind(names(shortScale))
 
@@ -120,7 +120,7 @@ faShort   <-  fa.poly(shortScale, nfactors = 2, rotate = "oblimin", fm="minres")
 print.psych(faShort, digits=2, cut=0.4)
 
 # EFA with shortScale version 2
-shortScale2  <- shortScale[, -c(14, 16)]
+shortScale2  <- shortScale[, -c(15)]
 
 faShort2   <-  fa.poly(shortScale2, nfactors = 2, rotate = "oblimin", fm="minres")
 print.psych(faShort2, digits=2, cut=0.4)
@@ -130,6 +130,10 @@ alpha(shortScale2)
 
 ## CFA - Confirmatory factor analysis ---
 cfa <- bfactor(shortScale2, c(2,2,2,2,2,2,2,2,2,1,2,1,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1))
+
+summary(cfa)
+
+cfa1f <- bfactor(shortScale2)
 
 itemplot(cfa, 2, shiny = TRUE)
 itemplot(cfa, 3, type = 'infotrace')
