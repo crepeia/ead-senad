@@ -1,13 +1,13 @@
 Escala de Percepção Social do Uso de Drogas
 ========================================================
 
-Este relatório objetiva apresentar as análises introdutória do instrumento ``Escala de percepção social do uso de drogas'', que está em fase de desenvolvimento pelo Centro de Referência em Pesquisa, Intervenção e Avaliação em Álcool e Outras Drogas (http://www.ufjf.br/crepeia/).
+Este relatório objetiva apresentar as análises introdutória do instrumento "Escala de percepção social do uso de drogas'', que está em fase de desenvolvimento pelo Centro de Referência em Pesquisa, Intervenção e Avaliação em Álcool e Outras Drogas (http://www.ufjf.br/crepeia/).
 
-O instrumento está sendo validado para população de educadores. O objetivo da pesquisa é oferecer uma medida confiável para avaliação da percepção social de educadores de um curso à distância oferecido pela Secretaria Nacional de Políticas sobre Drogas para aproximadamente 10.000 educadores dos estados de Minas Gerais e Rio de Janeiro.
+O instrumento está sendo validado para população de educadores. O objetivo da pesquisa é oferecer uma medida confiável para avaliação da percepção social de educadores de um curso à distância oferecido pela Secretaria Nacional de Políticas sobre Drogas para aproximadamente 10.000 educadores dos estados de Minas Gerais, Rio de Janeiro e Paraná.
 
-Durante todo o processo de desenvolvimento, foram utilizadas ferramentas de código-aberto, para facilitar o re-uso das técnicas e procedimentos desenvolvidos. Todo conteúdo do instrumento e de suas etapas estará disponível para o público no repositório (http://github.com/crepeia/ead-senad). Atualmente, o projeto está hospedado no repositório (http://github.com/henriquepgomide/ead-senad). 
+Durante todo o processo de desenvolvimento, foram utilizadas ferramentas de código-aberto, para facilitar o re-uso das técnicas e procedimentos desenvolvidos. Todo conteúdo do instrumento e de suas etapas estará disponível para o público no repositório (http://github.com/crepeia/ead-senad).
 
-Neste relatório são apresentadas, análises da escala com base em uma amostra de 2771 educadores-tutores do curso. As análises foram conduzidas através da linguagem de programação R usando os pacotes *car*, *psych* e *mirt*. 
+Neste relatório são apresentadas, análises da escala com base em uma amostra de 2766 educadores do curso. As análises foram conduzidas através da linguagem de programação R usando os pacotes *car*, *psych* e *mirt*. 
 
 Banco de Dados
 -------------------------
@@ -22,67 +22,104 @@ Os resultados são apresentados por tópicos: caracterização da amostra, avali
 
 ### Bibliotecas
 ```{r}
-library(car) # Function Recode
-library(psych) # Function Describe
-library(mirt) # CFA
-socialPer  <- read.csv("percepcaosocial_df.csv")
-## Summing scales to remove NA's
-socialPer$scaleSum  <- rowSums(socialPer[,34:71])
-## Subset completed observations and consented participation
-socialPer  <- subset(socialPer, subset=socialPer$termo=="Sim" & socialPer$estado=="Finalizadas" & !is.na(socialPer$scaleSum))
+# Load packages
+library(car)      # Load packge - used function Recode
+library(psych)    # Load packge - used for EFA
+library(mirt)     # CFA
+library(xtable)   # Load xtable package
+
+# Read data
+attitudesDf  <- read.csv("atitudesEducadores_df.csv")
+
+# Convert into scale items into numeric
+for (i in 33:71) {
+  attitudesDf[,i] <- recode(attitudesDf[,i], "'Discordo totalmente'=1;'Discordo'=2;'Nem discordo, nem concordo'=3;'Concordo'=4;'Concordo totalmente'=5")
+  attitudesDf[,i] <- as.numeric(attitudesDf[,i])
+}
+
+## Create variable - sum scales to remove NA's
+attitudesDf$scaleSum  <- rowSums(attitudesDf[,33:71])
+
+
 ```
+
+### Participantes que recusaram
+
+#### Termo consentimento
+```{r}
+table(attitudesDf$termo=="Sim", useNA = "always")
+# Porcentagem de recusas
+325/(2953+325)*100
+
+## Subset consented participation
+attitudesDf  <- subset(attitudesDf, subset=attitudesDf$termo=="Sim")
+
+```
+
+A porcentagem de recusas em participar ou não preenchimento da questão 9.92%.
+
+#### Não preencheram toda a escala
+```{r}
+# Table with complete cases
+table(!is.na(attitudesDf$scaleSum))
+187/(187+2766)*100
+
+## Subset completed observations
+attitudesDf  <- subset(attitudesDf, subset=!is.na(attitudesDf$scaleSum))
+```
+
+A porcentagem de pessoas que não preencheram toda a escala foi de 6.33%
 
 ### Sócio-demográficas
 
 #### Idade
 ```{r}
-socialPer$idade  <- as.numeric(as.character(socialPer$idade))
-socialPer$idade[socialPer$idade < 18 | socialPer$idade > 68 ]  <- NA
-summary(socialPer$idade) # all
-by(socialPer$idade, socialPer$sexo, describe) #by sex
+attitudesDf$idade  <- as.numeric(as.character(attitudesDf$idade))
+attitudesDf$idade[attitudesDf$idade < 18 | attitudesDf$idade > 68 ]  <- NA
+summary(attitudesDf$idade) # all
+by(attitudesDf$idade, attitudesDf$sexo, describe) # by sex
 ```
 
 #### Sexo
 ```{r}
-cbind(round(prop.table(sort(table(socialPer$sexo), decreasing = TRUE)),2))
+cbind(round(prop.table(sort(table(attitudesDf$sexo), decreasing = TRUE)),2))
 ```
 
 #### Escolaridade
 ```{r}
-cbind(round(prop.table(sort(table(socialPer$escolaridade), decreasing = TRUE)),2))
+cbind(round(prop.table(sort(table(attitudesDf$escolaridade), decreasing = TRUE)),2))
 ```
 
 #### Estado Civil
 ```{r}
-cbind(round(prop.table(sort(table(socialPer$estadocivil), decreasing = TRUE)),2))
+cbind(round(prop.table(sort(table(attitudesDf$estadocivil), decreasing = TRUE)),2))
 ```
 
 #### Tempo de serviço
 ```{r}
-timeWorking  <- as.numeric(as.character(socialPer$tempodeservico))
+timeWorking  <- as.numeric(as.character(attitudesDf$tempodeservico))
 timeWorking[timeWorking > 59]  <- NA
 summary(timeWorking)
 ```
 
 #### Religião
 ```{r}
-cbind(round(prop.table(sort(table(socialPer$religiao), decreasing = TRUE)),2))
+cbind(round(prop.table(sort(table(attitudesDf$religiao), decreasing = TRUE)),2))
 ```
 
 #### Contato com o tema
 ```{r}
-cbind(round(prop.table(sort(table(socialPer$contatoanterior), decreasing = TRUE)),2))
+cbind(round(prop.table(sort(table(attitudesDf$contatoanterior), decreasing = TRUE)),2))
 ```
 
 #### Lida com
 ```{r}
-cbind(round(prop.table(sort(table(socialPer$lidadiretamente), decreasing = TRUE)),2))
+cbind(round(prop.table(sort(table(attitudesDf$lidadiretamente), decreasing = TRUE)),2))
 ```
 
 #### Onde lida com
 ```{r}
-cbind(round(prop.table(sort(table(socialPer$lida.onde), decreasing = TRUE)),2))
-
+cbind(round(prop.table(sort(table(attitudesDf$lida.onde), decreasing = TRUE)),2))
 ```
 
 
@@ -96,8 +133,17 @@ print(as.character(questions[1:39,1]), type="html", justify = "left" )
 ### Itens
 
 ```{r}
-fullScale  <- socialPer[,34:71]
+# Create dataFrame with attitudes scale
+fullScale  <- attitudesDf[,33:71]
+
+## Reverse code items according to Theory
+for (i in c(14,19,28,29,32,33,34,35)) {
+  fullScale[,i] <- recode(fullScale[,i], "1:2=0; 3:5=1")
+}
+
+# Describe items
 describe(fullScale, skew=FALSE)
+
 ```
 
 
@@ -111,21 +157,24 @@ Análise Fatorial
 
 ### KMO - Adequação da amostra
 ```{r}
+# Sample adequacy
 KMO(fullScale)
 ```
 
 
 ### Esfericidade
 ```{r}
+# Sphericity
 bartlett.test(fullScale)
 ```
 
 ### Cattel's scree
 ```{r fig.width=10, fig.height=11}
+# Plot Scree Plot
 fa.parallel(fullScale, fm="minres", fa="fa", show.legend=TRUE) # yields 4 components
 ```
 
-### EFA - Análise fatorial exploratória
+### EFA - Análise fatorial exploratória com dois fatores
 
 ```{r}
 faAll <- fa.poly(fullScale, nfactors = 2, rotate = "oblimin")
@@ -134,34 +183,30 @@ print.psych(faAll, digits=2, cut=0.3)
 
 # RESULTADOS #
 
-* Sem fator  9, 13, 18, 25, 32
-* Um fatores e com cargas baixas   36
-* MR1  : 1,2,3,4,5,6,7,8,10,15,17,20,22,30,
-* MR2  : 11,12,-14,16,-19,21,23,24,26,27,-28,-29,-31,-33,-34,-35, 37,38,39
+* Sem fator 9, 13, 19,21,25,28,31,38
+* Em dois fatores 14,23,36,37,39
+* MR1  : 1,2,3,4,5,6,7,8,10,11,12,15,16,17,18,20,22,24,26,27,30
+* MR2  : 29,32,33,34,35
 
 #### Versão somente com itens com melhores cargas
 ```{r}
 # Remove items with low loadings
-shortScale  <- fullScale[, -c(9,13,18,25,32,36)]
+shortScale  <- fullScale[, -c(9,13, 19,21,25,28,31,38)]
 faShort   <-  fa.poly(shortScale, nfactors = 2, rotate = "oblimin", fm="minres")
 print.psych(faShort, digits=2, cut=0.3)
+
+
 ```
+
+```{r results='asis', echo=FALSE}
+xtable(unclass(faShort$fa$loadings))
+print(xtable(unclass(faShort$fa$loadings)), type="html")
+```
+
+
+
 
 #### Diagrama com fatores
 ```{r fig.width=20, fig.height=22}
 fa.diagram(faShort)
-```
-
-### CFA - Análise fatorial confirmatória
-
-```{r}
-### Run de model
-cfa <- bfactor(shortScale, c(2,2,2,2,2,2,2,2,2,1,1,1,2,1,2,1,2,1,2,1,1,1,1,1,1,2,1,1,1,2,1,1))
-
-### Summary
-summary(cfa)
-
-### Coefficients
-coef(cfa)
-
 ```
