@@ -7,7 +7,7 @@ O instrumento está sendo validado para população de educadores. O objetivo da
 
 Durante todo o processo de desenvolvimento, foram utilizadas ferramentas de código-aberto, para facilitar o re-uso das técnicas e procedimentos desenvolvidos. Todo conteúdo do instrumento e de suas etapas estará disponível para o público no repositório (http://github.com/crepeia/ead-senad).
 
-Neste relatório são apresentadas, análises da escala com base em uma amostra de 2766 educadores do curso. As análises foram conduzidas através da linguagem de programação R usando os pacotes *car*, *psych* e *mirt*. 
+Neste relatório são apresentadas, análises da escala com base em uma amostra de 2766 educadores do curso. As análises foram conduzidas através da linguagem de programação R usando os pacotes *car* e *psych*.
 
 Banco de Dados
 -------------------------
@@ -61,7 +61,7 @@ A porcentagem de recusas em participar ou não preenchimento da questão 9.92%.
 #### Não preencheram toda a escala
 ```{r}
 # Table with complete cases
-table(!is.na(attitudesDf$scaleSum))
+table(!is.na(attitudesDf$scaleSum), useNA="always")
 187/(187+2766)*100
 
 ## Subset completed observations
@@ -135,6 +135,8 @@ print(as.character(questions[1:39,1]), type="html", justify = "left" )
 ```{r}
 # Create dataFrame with attitudes scale
 fullScale  <- attitudesDf[,33:71]
+# Select items without NA's.
+fullScale  <- fullScale[complete.cases(fullScale),]
 
 ## Reverse code items according to Theory
 for (i in c(14,19,28,29,32,33,34,35)) {
@@ -182,15 +184,13 @@ print.psych(faAll, digits=2, cut=0.3)
 
 # RESULTADOS #
 
-* Sem fator 9, 13, 19,21,25,28,31,38
-* Em dois fatores 14,23,36,37,39
-* MR1  : 1,2,3,4,5,6,7,8,10,11,12,15,16,17,18,20,22,24,26,27,30
-* MR2  : 29,32,33,34,35
+* Sem fator 9, 13, 18, 25
+* Em dois fatores 12
 
 #### Versão somente com itens com melhores cargas
 ```{r}
 # Remove items with low loadings
-shortScale  <- fullScale[, -c(9,13, 19,21,25,28,31,38)]
+shortScale  <- fullScale[, -c(9,12,13,18,25)]
 faShort   <-  fa.poly(shortScale, nfactors = 2, rotate = "oblimin", fm="minres")
 print.psych(faShort, digits=2, cut=0.3)
 
