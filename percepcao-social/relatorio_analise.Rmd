@@ -138,14 +138,13 @@ fullScale  <- attitudesDf[,33:71]
 
 ## Reverse code items according to Theory
 for (i in c(14,19,28,29,32,33,34,35)) {
-  fullScale[,i] <- recode(fullScale[,i], "1:2=0; 3:5=1")
+  fullScale[,i] <- recode(fullScale[,i], "1=5;2=4;4=2;5=1")
 }
 
 # Describe items
 describe(fullScale, skew=FALSE)
 
 ```
-
 
 ### Crobach's alfa
 ```{r}

@@ -196,14 +196,9 @@ faAll <- fa.poly(fullScale, nfactors = 2, rotate = "oblimin")
 print.psych(faAll, digits=2, cut=0.3)
 ```
 
-```{r results='asis', echo=FALSE}
-xtable(unclass(faShort$fa$loadings))
-print(xtable(unclass(faShort$fa$loadings)), type="html")
-```
-
 
 #### Diagrama com fatores
 ```{r fig.width=20, fig.height=22}
-fa.diagram(faShort)
+fa.diagram(fullScale)
 ```
 
