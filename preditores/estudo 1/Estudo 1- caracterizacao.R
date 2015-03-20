@@ -1,7 +1,6 @@
 # Pacotes
 # Remember to install packages before loading them!
 
-library("tm")       # Trabalhar com strings
 library("psych")    # Função describe
 library("plyr")     # Função ldply
 library("ggplot2")  # Gráficos
