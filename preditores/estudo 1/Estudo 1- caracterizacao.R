@@ -43,7 +43,7 @@ multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
 }
 
 # Abrir banco de dados de atividades ----
-sociodemografico  <- read.csv("preditores/data/sociodemografico.csv", na.strings="-")
+sociodemografico  <- read.csv("logs/sociodemografico.csv", na.strings="-")
 
 ## Retirar questões inuteis
 sociodemografico <- sociodemografico[, -c(40:86)]
@@ -56,25 +56,26 @@ sociodemografico$nomecompleto <- stripWhitespace(tolower(sociodemografico$nomeco
 sociodemografico  <- subset(sociodemografico, sociodemografico$termo == "Sim")
 
 ## Abrir banco de logs Tratados
-dfCast <- read.csv("preditores/data/logsTratados.csv")
+dfCast <- read.csv("logs/logsTratados.csv")
 
 ## Abrir banco de atividades colaborativas
-ativCol  <- read.csv("preditores/data/atividadesColaborativas-respostas.csv", dec = ",", na.strings="-")
+ativCol  <- read.csv("logs/atividadesColaborativas-respostas.csv", dec = ",", na.strings="-")
 
 ## Criar banco somente com pessoas que consentiram participar
 ativCol  <- subset(ativCol, ativCol$termo == "Sim")
 
 # Mesclar bancos ----
 dfCast$.id  <- as.character(dfCast$.id)
-dfCast$nomecompleto  <- stripWhitespace(tolower(dfCast$.id))
+dfCast$nomecompleto  <- tolower(gsub(" ", "", dfCast$.id))
 
 sociodemografico$nomecompleto  <- as.character(sociodemografico$nomecompleto)
+sociodemografico$nomecompleto  <- tolower(gsub(" ", "", sociodemografico$nomecompleto))
 
 ## Mesclar e preservar todos os valores
-bancoFinal  <- merge(sociodemografico, dfCast, by.x = "nomecompleto", by.y = "nomecompleto")
+bancoFinal  <- merge(sociodemografico, dfCast, by.x = "nomecompleto", by.y = "nomecompleto", all = TRUE)
 
 ## Notas
-notas  <- read.csv("preditores/data/notas.csv")
+notas  <- read.csv("logs/notas.csv")
 
 
 ####################################################################################################

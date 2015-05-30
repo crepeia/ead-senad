@@ -45,7 +45,7 @@ library(psych) # Function Describe
 library(ggplot2) # Fancy Charts
 
 ## Import dataframe
-praticasPro  <- read.csv("praticasprofissionais_df.csv")
+praticasPro  <- read.csv("piloto/praticasprofissionais_df.csv")
 
 ## Sum scales to remove NA's
 praticasPro$scaleSum  <- rowSums(praticasPro[,21:63])
@@ -89,13 +89,26 @@ print.psych(faAll, digits=2, cut= .3)
 
 
 ## V1 - Items with good loadings ----
-# V1 - Version
-v1Scale  <- subset(fullScale, select = -c(3,8,15,31,36,41))
+# V1 - Version - In this version, I removed items with loadings lower than .4. The proportion of explained variance is 40%. The Cronbach's alpha was 0.90 (CI_95 = .87 - .93); factor 1 alpha's = 0.86, factor 2 alpha's =  0.89. Item pp007 should be evaluated because it is skewed.
+v1Scale  <- subset(fullScale, select = -c(3,8,11,13,15,17,21,31,34,36,41))
 
 # Factor analysis using polychoric correlations
 fav1 <- fa.poly(v1Scale, nfactors = 2, rotate = "oblimin", fm="minres")
-print.psych(fav1, digits=2, cut=0.3)
+print.psych(fav1, digits=2, cut=0.4, sort = TRUE)
 
+# Cronbach's alpha
+alpha(v1Scale)
+
+alpha(v1Scale[,c("pp007", "pp005", "pp004", "pp016", "pp020", "pp027","pp043", "pp002","pp009","pp006","pp032","pp039","pp010","pp026", "pp001","pp028","pp038")])
+
+alpha(v1Scale[,c("pp019", "pp030", "pp022", "pp014", "pp012", "pp024","pp033", "pp035","pp025","pp023","pp018","pp040","pp037","pp042", "pp029")])
+
+
+# V2 - Version - This must be discussed with Jéssica. In this version, I removed items with loadings lower than .6, which reduced the number of items to 17. The proportion of explained variance is 48%. The alpha was .86. The correlation between factors was .44.
+v2Scale <- subset(fullScale, select = c(7,5,4,16,20,27,43,2,9,6,19,30,22,14,12,24,33))
+
+fav2 <- fa.poly(v2Scale, nfactors = 2, rotate = "oblimin", fm="minres")
+print.psych(fav2, digits=2, sort = TRUE)
 
 
 ```
