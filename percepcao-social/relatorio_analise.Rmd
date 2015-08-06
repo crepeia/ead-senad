@@ -1,4 +1,4 @@
-Escala de Percepção Social do Uso de Drogas
+AEscala de Percepção Social do Uso de Drogas
 ========================================================
 
 Este relatório objetiva apresentar as análises introdutória do instrumento "Escala de percepção social do uso de drogas'', que está em fase de desenvolvimento pelo Centro de Referência em Pesquisa, Intervenção e Avaliação em Álcool e Outras Drogas (http://www.ufjf.br/crepeia/).
@@ -178,7 +178,7 @@ fa.parallel(fullScale, fm="minres", fa="fa", show.legend=TRUE) # yields 4 compon
 ### EFA - Análise fatorial exploratória com dois fatores
 
 ```{r}
-faAll <- fa.poly(fullScale, nfactors = 2, rotate = "oblimin")
+faAll <- fa.poly(fullScale, nfactors = 4, rotate = "none")
 print.psych(faAll, digits=2, cut=0.3)
 ```
 
