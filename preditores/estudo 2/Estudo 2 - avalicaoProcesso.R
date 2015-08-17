@@ -1,19 +1,21 @@
-########################
-# A FAZER
-########################
-
 ####################################################################################################
 ## ARTIGO 2 ----------------------------------------------------------------------------------------
 ## Atividades colaborativas.
 ####################################################################################################
 
-## Abrir banco de atividades colaborativas
+# Definir diretório com os bancos de dados.
+setwd("logs/")
 
+# Carregar pacotes
+library(sjPlot)
+
+
+## Abrir banco de atividades colaborativas
 ### PRE
-ativColPre  <- read.csv("preditores/data/ativColPre.csv", dec = ",", na.strings="-", stringsAsFactor = FALSE)
+ativColPre  <- read.csv("atividadesColaborativasPre.csv", dec = ",", na.strings="-", stringsAsFactor = FALSE)
 
 ### POS
-ativColPos  <- read.csv("preditores/data/ativColPos.csv", dec = ",", na.strings="-", stringsAsFactor = FALSE)
+ativColPos  <- read.csv("atividadesColaborativasPos.csv", dec = ",", na.strings="-", stringsAsFactor = FALSE)
 
 names(ativColPos)
 
@@ -48,75 +50,6 @@ ativColPre$FinteresseAlun  <- ifelse(grepl("Possuir alunos interessados na temá
 ativColPre$FrelAEC  <- ifelse(grepl("Relação saudável entre aluno-família-escola-comunidade", ativColPre$facilitadores),"Sim","Não")
 
 
-# Tabelas de Frequência
-
-propTable  <- function(x){
-  cbind(round(prop.table(sort(table(x), decreasing = TRUE)),3))*100
-}
-
-# Ausência da família
-propTable(ativColPre$BausenFam)
-
-# Comunicação com os pais
-propTable(ativColPre$BcomPais)
-
-# Uso de drogas dos pais
-propTable(ativColPre$BdrogasPais)
-
-# Presença de drogas no ambiente escolar
-propTable(ativColPre$BdrogasEsc)
-
-# Tráfico de drogas
-propTable(ativColPre$Btrafico)
-
-# Ausência de limites dos alunos
-propTable(ativColPre$BlimAlunos)
-
-# Ausência de colaboração da equipe
-propTable(ativColPre$BausenciaColEs)
-
-# Ausência do aluno na escola
-propTable(ativColPre$BausenciaAluEs)
-
-# Ausência de regras dos alunos
-propTable(ativColPre$BregrasAluEs)
-
-# Facilitadores
-
-# Alunos interessados na temática
-propTable(ativColPre$FinteresseAlun)
-
-# Presença de uma equipe para trabalhar a temática
-propTable(ativColPre$FpresencaEquipe)
-
-# Estimulos aos alunos
-propTable(ativColPre$FestiAlun)
-
-# Relação saudável aluno família escola comunidade
-propTable(ativColPre$FrelAEC)
-
-# Desenvolvimento de projetos
-propTable(ativColPre$FprojEscol)
-
-# Apoio aos projetos
-propTable(ativColPre$FapoioProj)
-
-# Presença de regras
-propTable(ativColPre$FregrasEscol)
-
-# Respeito na relação professor aluno
-propTable(ativColPre$FrespeitoAP)
-
-# Promoção de compromissos e confiança
-propTable(ativColPre$FpromCompConf)
-
-# Valorização do ambiente escolar
-propTable(ativColPre$FvalAmbEsc)
-
-# Participação da comunidade e dos pais
-propTable(ativColPre$FpartPaiCom)
-
-
 #####################
 # POS ---------------
 #####################
@@ -148,70 +81,139 @@ ativColPos$FinteresseAlun  <- ifelse(grepl("Possuir alunos interessados na temá
 ativColPos$FrelAEC  <- ifelse(grepl("Relação saudável entre aluno-família-escola-comunidade", ativColPos$facilitadores),"Sim","Não")
 
 
+# Join Data frames ----
+ativColPre$time <- "pre"
+ativColPos$time <- "pos"
+
+df <- rbind(ativColPos[,11:31], ativColPre[,24:44])
+
+for (i in 1:21) {
+  df[, i] <- as.factor(df[, i])
+}
+
+sjp.grpfrq(df[,1], df[,21], coord.flip = TRUE, showCountValues = FALSE, weightBy = )
+
+########################
+# Data Analysis
+########################
+
+# Gráficos
+labels <- c(
+  "BAR - Ausência da família",
+  "BAR - Comunicação com os pais",
+  "BAR - Ausência da família",
+  "BAR - Uso de drogas dos pais",
+  "BAR - Presença de drogas no ambiente escolar",
+  "BAR - Tráfico de drogas",
+  "BAR - Ausência de limites dos alunos",
+  "BAR - Ausência de colaboração da equipe",
+  "BAR - Ausência do aluno na escola",
+  "BAR - Ausência de regras dos alunos",
+  "FAC - Alunos interessados na temática",
+  "FAC - Presença de uma equipe para trabalhar a temática",
+  "FAC - Estimulos aos alunos",
+  "FAC - Relação saudável aluno família escola comunidade",
+  "FAC - Desenvolvimento de projetos",
+  "FAC - Apoio aos projetos",
+  "FAC - Presença de regras",
+  "FAC - Respeito na relação professor aluno",
+  "FAC - Promoção de compromissos e confiança",
+  "FAC - Valorização do ambiente escolar",
+  "FAC - Participação da comunidade e dos pais"
+)
+
+par(mfcol = c(2,2))
+for (i in 1:length(labels)){
+  barplot(prop.table(table(df[,i], df$time),2), horiz = TRUE, main = labels[i], names.arg = c("Pós","Pré"))
+}
+  
 # Tabelas de Frequência
 
-propTable  <- function(x){
-  cbind(round(prop.table(sort(table(x), decreasing = TRUE)),3))*100
+propTable  <- function(x,y){
+  printA <- round(prop.table(table(x, y),2),3)*100
+  printB <- chisq.test(table(x,y))
+  print(printA)
+  cat("\n Resultados do Qui-quadrado: \n X² = ",printB$statistic, "df = ",printB$parameter, "p = ",printB$p.value)
 }
 
 # Ausência da família
-propTable(ativColPos$BausenFam)
+propTable(df$BausenFam, df$time)
 
 # Comunicação com os pais
-propTable(ativColPos$BcomPais)
+propTable(df$BcomPais, df$time)
 
 # Uso de drogas dos pais
-propTable(ativColPos$BdrogasPais)
+propTable(df$BdrogasPais, df$time)
 
 # Presença de drogas no ambiente escolar
-propTable(ativColPos$BdrogasEsc)
+propTable(df$BdrogasEsc, df$time)
 
 # Tráfico de drogas
-propTable(ativColPos$Btrafico)
+propTable(df$Btrafico, df$time)
 
 # Ausência de limites dos alunos
-propTable(ativColPos$BlimAlunos)
+propTable(df$BlimAlunos, df$time)
 
 # Ausência de colaboração da equipe
-propTable(ativColPos$BausenciaColEs)
+propTable(df$BausenciaColEs, df$time)
 
 # Ausência do aluno na escola
-propTable(ativColPos$BausenciaAluEs)
+propTable(df$BausenciaAluEs, df$time)
 
 # Ausência de regras dos alunos
-propTable(ativColPos$BregrasAluEs)
+propTable(df$BregrasAluEs, df$time)
 
+################
 # Facilitadores
+##################
 
 # Alunos interessados na temática
-propTable(ativColPos$FinteresseAlun)
+propTable(df$FinteresseAlun, df$time)
 
 # Presença de uma equipe para trabalhar a temática
-propTable(ativColPos$FpresencaEquipe)
+propTable(df$FpresencaEquipe, df$time)
 
 # Estimulos aos alunos
-propTable(ativColPos$FestiAlun)
+propTable(df$FestiAlun, df$time)
 
 # Relação saudável aluno família escola comunidade
-propTable(ativColPos$FrelAEC)
+propTable(df$FrelAEC, df$time)
 
 # Desenvolvimento de projetos
-propTable(ativColPos$FprojEscol)
+propTable(df$FprojEscol, df$time)
 
 # Apoio aos projetos
-propTable(ativColPos$FapoioProj)
+propTable(df$FapoioProj, df$time)
 
-# Presença de regras
-propTable(ativColPos$FregrasEscol)
+# Presença de regras nas escolas
+propTable(df$FregrasEscol, df$time)
 
 # Respeito na relação professor aluno
-propTable(ativColPos$FrespeitoAP)
+propTable(df$FrespeitoAP, df$time)
 
 # Promoção de compromissos e confiança
-propTable(ativColPos$FpromCompConf)
+propTable(df$FpromCompConf, df$time)
 
 # Valorização do ambiente escolar
-propTable(ativColPos$FvalAmbEsc)
+propTable(df$FvalAmbEsc, df$time)
 
 # Participação da comunidade e dos pais
-propTable(ativColPos$FpartPaiCom)
+propTable(df$FpartPaiCom, df$time)
+
+# GGPLOT2 Graphs
+
+## Gráfico de barreiras
+barreiras <- read.csv("../estudo 2/barreiras.csv", stringsAsFactors = FALSE)
+barreiras <- melt(barreiras, id.vars = "Items", measure.vars = c("Pre","Pos"))
+barreiras$variable <- factor(barreiras$variable, levels = c("Pos","Pre"))
+names(barreiras) <- c("Itens", "Tempo", "value")
+ggplot(barreiras, aes(x = reorder(Itens,value), y = value, fill = Tempo)) + geom_bar(stat="identity", position="dodge") + coord_flip() + theme_minimal(base_size = 16, base_family = "Times New Roman") + xlab("") + ylab("")
+
+## Gráfico dos facilitadores
+facilitadores <- read.csv("../estudo 2/facilitadores.csv", stringsAsFactors = FALSE)
+facilitadores <- melt(facilitadores, id.vars = "Items", measure.vars = c("Pre","Pos"))
+facilitadores$variable <- factor(facilitadores$variable, levels = c("Pos","Pre"))
+names(facilitadores) <- c("Itens", "Tempo", "value")
+ggplot(facilitadores, aes(x = reorder(Itens,value), y = value, fill = Tempo)) + geom_bar(stat="identity", position="dodge") + coord_flip() + theme_minimal(base_size = 16, base_family = "Times New Roman") + xlab("") + ylab("")
+
+
