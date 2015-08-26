@@ -1,7 +1,7 @@
 ---
-title: "Relatório da Escala de Crenças e Práticas"
-author: "Guilherme e Jéssica"
-date: "13-11-2014"
+title: "Artigo 1- Análise de componentes principais e Análise fatorial"
+author: "Guilherme, Jéssica e Hrnqieu"
+date: "08-24-2015"
 output:
   html_document:
     highlight: tango
@@ -12,9 +12,9 @@ output:
 
 # Introdução
 
-Este relatório objetiva apresentar as análises introdutória do instrumento "Escala de práticas na prevenção do uso de álcool e outras drogas", que está em fase de desenvolvimento pelo [Centro de Referência em Pesquisa, Intervenção e Avaliação em Álcool e Outras Drogas](http://www.ufjf.br/crepeia/).
+Este relatório contém as análises introdutória do artigo "Escala de práticas na prevenção do uso de álcool e outras drogas", que está em fase de desenvolvimento pelo [Centro de Referência em Pesquisa, Intervenção e Avaliação em Álcool e Outras Drogas](http://www.ufjf.br/crepeia/).
 
-O instrumento foi validado para educadores.. O objetivo da pesquisa é oferecer uma medida confiável para avaliação das crenças e práticas de educadores de um curso à distância oferecido pela Secretaria Nacional de Políticas sobre Drogas para aproximadamente 10.000 educadores dos estados de Minas Gerais, Rio de Janeiro e Paraná.
+O objetivo da pesquisa é oferecer uma medida confiável para avaliação das crenças e práticas de educadores de um curso à distância oferecido pela Secretaria Nacional de Políticas sobre Drogas para aproximadamente 10.000 educadores dos estados de Minas Gerais, Rio de Janeiro e Paraná.
 
 Durante todo o processo de desenvolvimento, foram utilizadas ferramentas de código-aberto, para facilitar o re-uso das técnicas e procedimentos desenvolvidos. Todo conteúdo do instrumento e de suas etapas estará disponível para o público no repositório (http://github.com/crepeia/ead-senad). Atualmente, o projeto está hospedado no repositório (http://github.com/henriquepgomide/ead-senad). 
 
@@ -68,6 +68,9 @@ by(praticasPro$idade, praticasPro$sexo, describe) #by sex
 
 ```
 
+
+### Análise Preliminar
+
 ```{r}
 fullScale  <- praticasPro[,21:63]
 # descriptives
@@ -80,9 +83,91 @@ KMO(fullScale)
 bartlett.test(fullScale)
 
 # Defining factors
-auto  <- fa.parallel(fullScale, fm="minres", fa="both", ylabel="Eigenvalues") # yields 4 components and 4 factors
-VSS(fullScale, rotate="none") # VSS = 2; MAP = 4 factors
+auto  <- fa.parallel(fullScale, fm="minres", fa="both", ylabel="Eigenvalues") # yields 4 factors
 
+```
+
+# Figura 1 - Artigo - Scree Plot
+```{r echo = FALSE }
+# Parallel Analysis
+faParalel  <- fa.parallel(fullScale, fm="minres", fa="fa", ylabel="Eigenvalues")
+# Create dataframe
+screePlot <- data.frame(n = 1:43, fa = auto$pc.values, sim = auto$pc.sim)
+# Select just the first 10 factors
+screePlot <- screePlot[1:10,]
+
+## Create ggplot ScreePlot
+ggplot(screePlot, aes(y = fa, x=1:10, color ="Dados")) + geom_line(linetype = 1) + xlim(1,10) + geom_line(aes(y = screePlot$sim, color = "1"), linetype=4) + theme_bw() + xlab("Fatores") + ylab("Autovalores") + theme(legend.position=c(.85,.80), legend.title = element_text(size = 14), legend.text = element_text(size = 12), axis.title =element_text(size = 12)) + scale_colour_discrete(name = "Legenda", labels=c("Dados simulados","Dados da amostra")) + scale_x_continuous(breaks=c(1,3,5,7,9))
+
+```
+
+
+
+
+```{r echo=FALSE}
+# Diagram
+fa.diagram(fav1)
+```
+
+
+
+### Análise de componentes principais com sem rotação / com rotação oblimin
+#### 1 Tentativa
+
+```{r}
+
+## Reverse code items according to Theory - I commented this line. The loop is originally from other script.
+#for (i in c(14,19,28,29,32,33,34,35)) {
+#  aScale[,i] <- recode(aScale[,i], "1=5;2=4;4=2;5=1")
+#}
+
+###########################
+# EFA
+###########################
+
+# FIRST EFA --------
+# Factor analysis using polychoric correlations
+polyAll <- polychoric(fullScale)
+
+# Unrotated PCA
+faAll <- principal(polyAll$rho, nfactors = 2)
+print.psych(faAll, digits=2, cut= .4)
+
+# Rotated PCA
+faAll_rot <- principal(polyAll$rho, nfactors = 2, rotate="oblimin")
+print.psych(faAll_rot, digits=2, cut= .4)
+# Results - Items 03,08,15,21,31,26,41 need to be removed due to small loadings < (.4).
+
+```
+
+
+#### 2 Tentativa sem rotação / com rotação oblimin
+
+```{r}
+# SECOND EFA -------
+# Remove items with low loadings detected in previous step.
+shortScale  <- fullScale[, -c(3,8,15,21,31,36,41)]
+polyShort <- polychoric(shortScale)
+# Unrotated PCA
+faShortScale <- principal(polyShort$rho, nfactors = 2)
+print.psych(faShortScale, digits=2, cut= .4)
+# Rotated PCA
+faShortScale_rot <- principal(polyShort$rho, nfactors = 2, rotate="oblimin")
+print.psych(faShortScale_rot, digits=2, cut= .4)
+```
+
+### Alfa de Cronbach
+```{r}
+factorOne <- shortScale[, c("pp001", "pp002", "pp004", "pp005", "pp006", "pp007", "pp009", "pp010", "pp016", "pp020", "pp026", "pp027", "pp028", "pp032", "pp038", "pp039", "pp043")]
+factorTwo <- shortScale[, c("pp011", "pp012", "pp013", "pp014", "pp017", "pp018", "pp019", "pp022", "pp023", "pp024", "pp025", "pp029", "pp030", "pp033", "pp034", "pp035", "pp037", "pp040", "pp042")]
+```
+
+
+
+### NAO USADO NO ARTIGO ---
+### Análise Fatorial com método de fatoração dos mínimos resíduos e rotação oblimin.
+
+```{r}
 # Factor Analysis using polychoric correlations
 faAll <- fa.poly(fullScale, nfactors = 2, rotate = "oblimin", fm="minres")
 print.psych(faAll, digits=2, cut= .3)
@@ -109,12 +194,6 @@ v2Scale <- subset(fullScale, select = c(7,5,4,16,20,27,43,2,9,6,19,30,22,14,12,2
 
 fav2 <- fa.poly(v2Scale, nfactors = 2, rotate = "oblimin", fm="minres")
 print.psych(fav2, digits=2, sort = TRUE)
-
-
 ```
 
 
-```{r echo=FALSE}
-# Diagram
-fa.diagram(fav1)
-```
