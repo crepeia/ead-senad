@@ -182,11 +182,11 @@ fav1 <- fa.poly(v1Scale, nfactors = 2, rotate = "oblimin", fm="minres")
 print.psych(fav1, digits=2, cut=0.4, sort = TRUE)
 
 # Cronbach's alpha
-alpha(v1Scale)
+alpha(v1Scale, check.keys = TRUE)
 
-alpha(v1Scale[,c("pp007", "pp005", "pp004", "pp016", "pp020", "pp027","pp043", "pp002","pp009","pp006","pp032","pp039","pp010","pp026", "pp001","pp028","pp038")])
+alpha(v1Scale[,c("pp007", "pp005", "pp004", "pp016", "pp020", "pp027","pp043", "pp002","pp009","pp006","pp032","pp039","pp010","pp026", "pp001","pp028","pp038")], check.keys = TRUE)
 
-alpha(v1Scale[,c("pp019", "pp030", "pp022", "pp014", "pp012", "pp024","pp033", "pp035","pp025","pp023","pp018","pp040","pp037","pp042", "pp029")])
+alpha(v1Scale[,c("pp019", "pp030", "pp022", "pp014", "pp012", "pp024","pp033", "pp035","pp025","pp023","pp018","pp040","pp037","pp042", "pp029")], check.keys = TRUE)
 
 
 # V2 - Version - This must be discussed with Jéssica. In this version, I removed items with loadings lower than .6, which reduced the number of items to 17. The proportion of explained variance is 48%. The alpha was .86. The correlation between factors was .44.

@@ -13,10 +13,10 @@ library(ggplot2) # For better charts
 # ================
 
 # Scale questions 
-questions  <- read.csv("percepcaosocial_questions.csv", header = FALSE)
+questions  <- read.csv("piloto/percepcaosocial_questions.csv", header = FALSE)
 
 # Import dataframe
-socialPer  <- read.csv("percepcaosocial_df.csv")
+socialPer  <- read.csv("piloto/percepcaosocial_df.csv", stringsAsFactors = FALSE)
 
 # ================
 # Analyses    ----
@@ -25,7 +25,6 @@ socialPer  <- read.csv("percepcaosocial_df.csv")
 # Atrition ----
 
 ## 1. How many people did not agree to participate?
-
 ## Table - consented vs. not-consented
 table(!is.na(socialPer$termo=="Sim"))
 
@@ -101,7 +100,7 @@ bartlett.test(fullScale)
 # Parallel Analysis
 faParalel  <- fa.parallel(fullScale, fm="minres", fa="fa", ylabel="Eigenvalues")
 # Create dataframe
-screePlot <- data.frame(n = 1:42, fa = faParalel$fa.values, sim = faParalel$fa.sim)
+screePlot <- data.frame(n = 1:42, fa = faParalel$pc.values, sim = faParalel$pc.sim)
 # Select just the first 10 factors
 screePlot <- screePlot[1:10,]
 
@@ -111,4 +110,50 @@ ggplot(screePlot, aes(y = fa, x=1:10, color ="Dados")) + geom_line(linetype = 1)
 ## Factor Analysis
 faAll <- fa(fullScale, nfactors = 2, rotate = "oblimin", fm="minres")
 plot(faAll)
-plot.psych(faAll, )
+plot.psych(faAll)
+
+### Análise de componentes principais com sem rotação / com rotação oblimin
+#### 1 Tentativa
+
+## Reverse code items according to Theory - I commented this line. The loop is originally from other script.
+#for (i in c(14,19,28,29,32,33,34,35)) {
+#  aScale[,i] <- recode(aScale[,i], "1=5;2=4;4=2;5=1")
+#}
+
+###########################
+# EFA
+###########################
+
+# FIRST EFA --------
+# Factor analysis using polychoric correlations
+polyAll <- polychoric(fullScale)
+
+# Unrotated PCA
+faAll <- principal(polyAll$rho, nfactors = 2)
+print.psych(faAll, digits=2, cut= .4)
+
+# Rotated PCA
+faAll_rot <- principal(polyAll$rho, nfactors = 2, rotate="oblimin")
+print.psych(faAll_rot, digits=2, cut= .4)
+# Results - Items 10,20,24,34,36,38 need to be removed due to small loadings < (.4).
+
+#### 2 Tentativa sem rotação / com rotação oblimin
+# SECOND EFA -------
+# Remove items with low loadings detected in previous step.
+shortScale  <- fullScale[, -c(10,20,24,34,36,38)]
+polyShort <- polychoric(shortScale)
+# Unrotated PCA
+faShortScale <- principal(polyShort$rho, nfactors = 2)
+print.psych(faShortScale, digits=2, cut= .4)
+# Rotated PCA
+faShortScale_rot <- principal(polyShort$rho, nfactors = 2, rotate="oblimin")
+print.psych(faShortScale_rot, digits=2, cut= .4)
+
+### Alfa de Cronbach
+factorOne <- shortScale[, c("ps001", "ps002", "ps003", "ps004", "ps005", "ps006", "ps007", "ps008", "ps011", "ps014", "ps016", "ps018", "ps019", "ps022", "ps025", "ps028", "ps033", "ps039", "ps042")]
+factorTwo <- shortScale[, c("ps009", "ps012", "ps013", "ps015", "ps017", "ps021", "ps023", "ps026", "ps027", "ps029", "ps030", "ps031", "ps032", "ps035", "ps037", "ps040", "ps041")]
+
+alpha(factorOne, check.keys = TRUE)
+alpha(factorTwo, check.keys = TRUE)
+
+

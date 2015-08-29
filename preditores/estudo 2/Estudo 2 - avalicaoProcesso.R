@@ -1,7 +1,7 @@
-####################################################################################################
-## ARTIGO 2 ----------------------------------------------------------------------------------------
+##############################################################################################
+## ARTIGO 2 ----------------
 ## Atividades colaborativas.
-####################################################################################################
+#############################################################################################
 
 # Definir diretório com os bancos de dados.
 setwd("logs/")
@@ -217,3 +217,17 @@ names(facilitadores) <- c("Itens", "Tempo", "value")
 ggplot(facilitadores, aes(x = reorder(Itens,value), y = value, fill = Tempo)) + geom_bar(stat="identity", position="dodge") + coord_flip() + theme_minimal(base_size = 16, base_family = "Times New Roman") + xlab("") + ylab("")
 
 
+# Para fazer
+# Juntar os bancos de dados e descrever os participantes: ocupação, sexo, idade.
+demoAtivCol <- read.csv("../preditores/logs/demoAtivCol.csv", stringsAsFactors = FALSE)
+cbind(names(demoAtivCol))
+demo <- demoAtivCol[,c(2,45,46,47,48,52,181,180)]
+head(demo$nomecompleto,50)
+demo$duplicated <- duplicated(demo$nomecompleto)
+demoReal <- subset(demo, demo$duplicated == FALSE)
+
+demoReal$age <- gsub("[A-z]", "", demoReal$idade)
+demoReal$age <- as.numeric(demoReal$age)
+demoReal$age <- ifelse(demoReal$age < 80 & demoReal$age > 18, demoReal$age, NA)
+
+describe(demoReal$age)
