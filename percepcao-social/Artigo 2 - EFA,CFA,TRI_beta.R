@@ -24,17 +24,17 @@ for (i in c(33:71)){
 
 ## Sum items to remove NA's
 attitudesE$scaleSum  <- rowSums(attitudesE[,33:71])
-
+  
 # Subset with those who consented
 attitudesE <- subset(attitudesE, attitudesE$termo == "Sim" & !is.na(attitudesE$scaleSum))
-
+  
 # Select Scale items
 aScale  <-  attitudesE[,33:71]
-
+  
 ## Reverse code items according to Theory
-for (i in c(14,19,28,29,32,33,34,35)) {
-  aScale[,i] <- recode(aScale[,i], "1=5;2=4;4=2;5=1")
-}
+  for (i in c(14,19,28,29,32,33,34,35)) {
+    aScale[,i] <- recode(aScale[,i], "1=5;2=4;4=2;5=1")
+  }
 
 ###########################
 # EFA
@@ -50,6 +50,12 @@ print.psych(faAll, digits=2, cut= .4)
 faAll_rot <- principal(polyAll$rho, nfactors = 2, rotate="oblimin")
 print.psych(faAll_rot, digits=2, cut= .4)
 # Results - Items 9,11,13,18,21,25,31,39 need to be removed due to small loadings < (.4).
+
+## ANA, Como fazer o alfa de Cronbach, KMO, Bartlett
+## Tire o '#' das linhas abaixo para executar
+# KMO(aScale) # KMO
+# bartlett.test(aScale) # Bartlett's test
+# alpha(aScale, check.keys = TRUE) # Alfa da primeira versão da escala.
 
 # SECOND EFA -------
 # Remove items with low loadings detected in previous step.
@@ -89,18 +95,26 @@ coef(cfaTheory)
 
 # Create Short Scale - Version 1
 aScale1 <- shortScale[, c(1,2,3,4,5,6,7,8,9,10,12,14,16,17,24,29)]
+itemNames <- names(aScale1)
+itemNames[1]
 
 # Grade Response Model
-triShort1 <- grm(aScale1)
+triShort1 <- grm(aScale1, constrained = FALSE)
 
 # Estimate Coeficients
 coef(triShort1)
 
+# Para Ana - 
+# Para gerar o gráfico use o script abaixo
+plot(triShort1, type = "ICC", item = 1, main = "Item 8 + itemNames[1]" , ylab = "Rótulo do eixo Y", xlab = "Rótulo do eixo X")
+
 # Plot graphs
+pdf("mygraph.pdf")
 par(mfrow = c(4,4))
 for (i in 1:16) {  
-plot(triShort1, type = "ICC", items = i,  main = "CCI", ylab = "Probabilidade", xlab = "Proficiência", annot=TRUE, legend=FALSE)
+plot(triShort1, type = "ICC", items = i,  main = paste("Item - ", itemNames[i]), ylab = "Probabilidade", xlab = "Proficiência", annot=TRUE, legend=FALSE)
 }
+dev.off()
 
 # Create Short Scale - Version 2
 aScale2 <- shortScale[, -c(1,2,3,4,5,6,7,8,9,10,12,14,16,17,24,29)]
@@ -112,7 +126,9 @@ triShort2 <- grm(aScale2)
 coef(triShort2)
 
 # Plot graphs
+pdf("mygraph_2.pdf")
 par(mfrow = c(4,4))
 for (i in 1:15) {  
-  plot(triShort2, type = "ICC", items = i,  main = "CCI", ylab = "Probabilidade", xlab = "Proficiência", annot=TRUE, legend=FALSE)
+  plot(triShort2, type = "ICC", items = i,  main = paste("Item - ", itemNames[i]), ylab = "Probabilidade", xlab = "Proficiência", annot=TRUE, legend=FALSE)
 }
+dev.off()
