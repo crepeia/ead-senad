@@ -115,7 +115,7 @@ summary(cfaEFA)
 coef(cfaEFA)
 M2(cfaEFA)
 
-# Results - We have a significant number of items with bad loadings. Therefore, I recommend the use other confirmatory models.
+# Results - We have a significant number of items with bad loadings. Therefore, I recommend the use of alternative confirmatory models.
 
 bScale <- aScale[, -c(2,9,11,14,15,18,24,25,26,28,33,34)]
 efaVersion1  <-   c(1,1,1,1,1,1,1,2,2,1,2,1,2,2,2,2,1,2,2,2,2,2,1,2,1)
@@ -159,6 +159,7 @@ coef(mod3, IRTpars = TRUE)
 coef(mod4, IRTpars = TRUE)
 
 # Plot - Show test information
+itemplot(mod3, type = "trace", item = 1)
 plot(mod3, type = "info")
 plot(mod4, type = "info")
 

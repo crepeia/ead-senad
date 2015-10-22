@@ -104,6 +104,7 @@ triShort1 <- grm(aScale1, constrained = FALSE)
 # Estimate Coeficients
 coef(triShort1)
 
+
 # Para Ana - 
 # Para gerar o gráfico use o script abaixo
 plot(triShort1, type = "ICC", item = 1, main = "Item 8 + itemNames[1]" , ylab = "Rótulo do eixo Y", xlab = "Rótulo do eixo X")
@@ -132,3 +133,21 @@ for (i in 1:15) {
   plot(triShort2, type = "ICC", items = i,  main = paste("Item - ", itemNames[i]), ylab = "Probabilidade", xlab = "Proficiência", annot=TRUE, legend=FALSE)
 }
 dev.off()
+
+########################################
+## Como gerar os scores baseado no LTM
+#########################################
+
+# Estimar escores
+escoresFatorA <- factor.scores(triShort1)
+escoresFatorB <- factor.scores(triShort2)
+
+# Gerar histogramas por 4  fator
+hist(escoresFatorA$score.dat$z1,
+     xlab="Theta",
+     main="Titulo do grafico")
+
+hist(escoresFatorB$score.dat$z1,
+     xlab="Theta", 
+     main="Titulo do grafico")
+
