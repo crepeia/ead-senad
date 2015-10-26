@@ -18,6 +18,9 @@ library(RColorBrewer) # Better color palletes
 myColors <- brewer.pal(5,"RdYlGn")
 myColors[3] <- "yellow"
 
+# Set seed
+set.seed(123)
+
 # Set trellis parameters
 my.settings <- list(
   strip.background=list(col="#eeeeee"),
@@ -37,7 +40,9 @@ praticasPro  <- read.csv("praticasprofissionais_df.csv", stringsAsFactors = FALS
 # }
 
 ## Sum items to remove NA's
-praticasPro$scaleSum  <- rowSums(praticasPro[,32:68])
+## Remove item 18 - low loading acording to paper 1 
+praticasPro <- praticasPro[, -49]
+praticasPro$scaleSum  <- rowSums(praticasPro[,32:67])
 
 # Subset only with participants who consented - N 3247 agreed
 praticasPro <- subset(praticasPro, praticasPro$termo == "Sim")
@@ -71,7 +76,7 @@ cbind(round(prop.table(sort(table(praticasPro$lidadiretamente), decreasing = TRU
 aScale <- subset(praticasPro, !is.na(praticasPro$scaleSum))
 
 # Select Scale items
-aScale  <-  aScale[,32:68]
+aScale  <-  aScale[,32:67]
 
 ## Reverse code items according to Theory
 # for (i in c(14,19,28,29,32,33,34,35)) {
@@ -90,6 +95,10 @@ aScale  <-  aScale[,32:68]
 # EFA
 ###########################
 
+KMO(aScale)
+bartlett.test(aScale)
+alpha(aScale, check.keys = TRUE)
+
 # FIRST EFA --------
 # Factor analysis using polychoric correlations
 polyAll <- polychoric(aScale)
@@ -103,22 +112,27 @@ print.psych(faAll_rot, digits=2, cut= .4)
 # CFA - BFACTOR
 ###########################
 
-item_pos <- c(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37)
-efaVersion  <-   c(1,1,1,1,1,1,1,1,2,2,2,2,1,2,2,2,1,1,2,2,2,2,1,1,1,2,2,1,2,2,2,2,1,1,2,2,1)
-#theoryVersion <- c(1,1,1,1,1,1,1,1,2,2,2,2,1,2,2,2,1,1,2,2,2,2,1,1,1,2,2,1,2,2,2,2,1,1,2,2,1)
-dimShort <-cbind(item_pos, efaVersion)
+item_pos <- c(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36)
+efaVersion  <-   c(1,1,1,1,1,1,1,1,2,2,2,2,1,2,2,2,1,2,2,2,2,1,1,1,2,2,1,2,2,2,2,1,1,2,2,1)
+theoryVersion <- c(1,1,1,1,1,1,1,1,1,2,2,2,1,1,2,2,1,2,1,2,2,1,1,1,1,2,1,2,1,2,1,1,1,1,1,1)
+dimShort <-cbind(item_pos, efaVersion, theoryVersion)
 dimShort
 
-# EFA result
+# Based on PCA result
 cfaEFA <- bfactor(aScale, efaVersion)
 summary(cfaEFA)
 coef(cfaEFA)
 M2(cfaEFA)
 
-# Results - We have a significant number of items with bad loadings. Therefore, I recommend the use of alternative confirmatory models.
+# Based on Theory
+cfaTheory <- bfactor(aScale, theoryVersion)
+summary(cfaTheory)
+coef(cfaTheory)
+M2(cfaTheory)
 
-bScale <- aScale[, -c(2,9,11,14,15,18,24,25,26,28,33,34)]
-efaVersion1  <-   c(1,1,1,1,1,1,1,2,2,1,2,1,2,2,2,2,1,2,2,2,2,2,1,2,1)
+# ANOVA - Model based on theory showed better results (AIC and BIC), although 18 items had bad loadings. Therefore, I'd recommend the use of alternative confirmatory models.
+anova(cfaEFA, cfaTheory)
+
 
 ###########################
 # IRT
@@ -126,85 +140,131 @@ efaVersion1  <-   c(1,1,1,1,1,1,1,2,2,1,2,1,2,2,2,2,1,2,2,2,2,2,1,2,1)
 
 ## NOTE - There has been some concern on the function GRM of ltm package. You can see a forum discussion here: http://stats.stackexchange.com/questions/63891/is-r-output-reliable-specially-irt-package-ltm. In order to avoid this concern, I decided to use the grm estimation of mirt package, which is compared to other softwares.
 
+# Create Scale from factor 1 - Version 1
+factorC <- aScale[, c(1,2,3,4,5,6,7,8,13,17,22,23,24,27,32,33,36)]
+factorP <- aScale[, -c(1,2,3,4,5,6,7,8,13,17,22,23,24,27,32,33,36)]
+
+modC <- mirt(factorC, itemtype = "graded", model = 1, message = FALSE)
+modP <- mirt(factorP, itemtype = "graded", model = 1, message = FALSE)
+
+# Summary
+summary(modC)
+summary(modP)
+
+# Compute the M2 model fit statistic from Maydey-Olivares and Joe (2006)
+M2(mod1); M2(mod2); M2(modC); M2(modP)
+
+##########################################
+# PLOTS
+##########################################
+
+coef(modC, IRTpars = TRUE)
+coef(modP, IRTpars = TRUE)
+
+# Plot - Show test information
+itemplot(mod3, type = "trace", item = 1)
+plot(modC, type = "info")
+plot(modP, type = "info")
+
+# Plot - Realibility
+plot(modC, type = "rxx")
+plot(modP, type = "rxx")
+
+# Plot - Information trace
+plot(modC, type = "trace", par.settings = my.settings, main = "", auto.key=list(space="top", columns=5, title="", cex.title=1, cex.text = .3, text=c("Disc. Total.","Disc.","Nem Con., nem disc.","Conc.","Conc. Total.")))
+
+plot(modP, type = "trace", par.settings = my.settings, main = "", auto.key=list(space="top", columns=5, title="", cex.title=1, cex.text = .3, text=c("Disc. Total.","Disc.","Nem Con., nem disc.","Conc.","Conc. Total.")))
+
+# Plot - Info trace
+plot(modC, type = "infotrace", par.settings = my.settings, main = "")
+plot(modP, type = "infotrace", par.settings = my.settings, main = "")
+# Conclusion - Items to be included in the next iteration: 
+#              modC - pp002, pp003, pp004, pp006, pp017
+#              modP - pp010, pp012, pp020, pp021, pp029,pp031,pp035,pp036
+
+itemfit(modC)
+itemfit(modP)
+
+residuals(modC)
+residuals(modP)
+
+marginal_rxx(modC, theta_lim = c(-3, 3))
+marginal_rxx(modP, theta_lim = c(-3, 3))
+
+scoresCrencas  <- fscores(modC, full.scores = TRUE)
+scoresPraticas <- fscores(modP, full.scores = TRUE)
+
+
+##########################################
+# Improving Scales 
+##########################################
+
+#  Items to be included in the next iteration: 
+#         modC - pp002, pp003, pp004, pp006, pp017
+#         modP - pp010, pp012, pp020, pp021, pp029, pp031, pp035, pp036
+
+factorC5 <- factorC[,c("pp002", "pp003", "pp004", "pp006", "pp017")]
+factorP8 <- factorP[, c("pp010", "pp012", "pp020", "pp021", "pp029", "pp031", "pp035", "pp036")]
+
+# Create models with short version
+modC5 <- mirt(factorC5, model = 1, itemtype = "graded")
+modP8 <- mirt(factorP8, model = 1, itemtype = "graded")
+
+# Compare full version vs. short version
+anova(modC, modC5)
+
+# Compare full version vs. short version
+anova(modP8, modP)
+
+# M2
+M2(modC5)
+
+# Plot - Information trace
+plot(modC5, type = "trace", par.settings = my.settings, main = "", auto.key=list(space="top", columns=5, title="", cex.title=1, cex.text = .3, text=c("Disc. Total.","Disc.","Nem Con., nem disc.","Conc.","Conc. Total.")))
+
+plot(modP8, type = "trace", par.settings = my.settings, main = "", auto.key=list(space="top", columns=5, title="", cex.title=1, cex.text = .3, text=c("Disc. Total.","Disc.","Nem Con., nem disc.","Conc.","Conc. Total.")))
+
+# Plot - Info trace
+plot(modC5, type = "infotrace", par.settings = my.settings, main = "")
+plot(modP8, type = "infotrace", par.settings = my.settings, main = "")
+
+
+
+##################
+# BIN
+##################
+
 # MIRT function with two correlated factors
+mod0 <- mirt(aScale, itemtype = "graded", model = 4, message = FALSE)
+mod0; summary(mod0);coef(mod0)
+
+
+
 ## Exploratory model
 mod1 <- mirt(aScale, itemtype = "graded", model = 2, message = FALSE)
 mod1; summary(mod1);coef(mod1)
 
 ## Confirmatory model
-model <- 'F1 = 1-8, 13,17,18, 23-25, 28,33,34,37 
-          F2 = 9-12, 14,15, 16, 19-22, 26,27,29-32,35,36
+model <- 'F1 = 1-8, 13,17,22-24,27,32,33,36 
+          F2 = 9-12, 14,15, 16, 18-21, 25,27,28-31,34,35
           COV = F1*F2'
 
 mod2 <- mirt(aScale, itemtype = "graded", model = model
              , message = FALSE)
 
-# Create Scale from factor 1 - Version 1
-factorA <- aScale[, c(1,2,3,4,5,6,7,8,13,17,18,23,24,25,28,33,34,37)]
-factorB <- aScale[, -c(1,2,3,4,5,6,7,8,13,17,18,23,24,25,28,33,34,37)]
-
-mod3 <- mirt(factorA, itemtype = "graded", model = 1, message = FALSE)
-mod4 <- mirt(factorB, itemtype = "graded", model = 1, message = FALSE)
-
-# Compute the M2 model fit statistic from Maydey-Olivares and Joe (2006)
-M2(mod1); M2(mod2); M2(mod3); M2(mod4)
-anova(mod1, mod2)
-
-
-##########################################
-# Improving Models with separated factors
-##########################################
-
-coef(mod3, IRTpars = TRUE)
-coef(mod4, IRTpars = TRUE)
-
-# Plot - Show test information
-itemplot(mod3, type = "trace", item = 1)
-plot(mod3, type = "info")
-plot(mod4, type = "info")
-
-# Plot - Realibility
-plot(mod3, type = "rxx")
-plot(mod4, type = "rxx")
-
-# Plot - Information trace
-plot(mod3, type = "trace", par.settings = my.settings, main = "", auto.key=list(space="top", columns=5, title="", cex.title=1, cex.text = .3, text=c("Disc. Total.","Disc.","Nem Con., nem disc.","Conc.","Conc. Total.")))
-
-plot(mod4, type = "trace", par.settings = my.settings, main = "", auto.key=list(space="top", columns=5, title="", cex.title=1, cex.text = .3, text=c("Disc. Total.","Disc.","Nem Con., nem disc.","Conc.","Conc. Total.")))
-
-# Plot - Info trace
-plot(mod3, type = "infotrace", par.settings = my.settings, main = "")
-plot(mod4, type = "infotrace", par.settings = my.settings, main = "")
-
-
 # Plot items from scale Factor 1
 pdf("plotFactor1.pdf")
 for (i in 1:18){
-print(itemplot(mod3, item = i, type = "trace", main = paste("Item ", names(factorA[i])), par.settings = my.settings,auto.key=list(space="top", columns=3, title="", cex.title=1, cex.text = .3, text=c("DT","D","M","C","CT"))))
+  print(itemplot(modC, item = i, type = "trace", main = paste("Item ", names(factorA[i])), par.settings = my.settings,auto.key=list(space="top", columns=3, title="", cex.title=1, cex.text = .3, text=c("DT","D","M","C","CT"))))
 }
 dev.off()
 
 # Plot items from scale Factor 
 pdf("plotFactor2.pdf")
 for (i in 1:19){
-  print(itemplot(mod4, item = i, type = "trace", main = paste("Item ", names(factorB[i])), auto.key=list(space="top", columns=5, title="", cex.title=1, cex.text = .3, text=c("DT","D","M","C","CT"))))
+  print(itemplot(modP, item = i, type = "trace", main = paste("Item ", names(factorB[i])), auto.key=list(space="top", columns=5, title="", cex.title=1, cex.text = .3, text=c("DT","D","M","C","CT"))))
 }
 dev.off()
-
-itemfit(mod3)
-itemfit(mod4)
-
-residuals(mod3)
-residuals(mod4)
-
-
-# This line below create multiple graphs. Still need work to be implemented.
-# grid.arrange(itemplot(mod3, item = 1, type = "trace"),itemplot(mod3, item = 2, type = "trace"), ncol=2, newpage = TRUE )
-
-
-##################
-# BIN
-##################
 
 # Grade Response Model
 triShort1 <- grm(factorA)
