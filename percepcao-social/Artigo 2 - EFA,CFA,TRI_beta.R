@@ -7,19 +7,36 @@
 ###########################
 
 # Load Libraries
-library(car)      # Load packge - used function Recode
-library(psych)    # Load packge - used for EFA
-library(mirt)     # CFA
-library(xtable)   # Load xtable package
-library(ltm)      # LTM analysis
+library(car)          # Load packge - used function Recode
+library(psych)        # Load packge - used for EFA
+library(mirt)         # CFA, GRM IRT Analysis
+library(xtable)       # Load xtable package
+library(ltm)          # LTM analysis - DEPRECATED. This package produces instable GRM models. 
+library(RColorBrewer) # Better color palletes
+
+# Select color pallette
+myColors <- brewer.pal(5,"RdYlGn")
+myColors[3] <- "yellow"
+
+# Set seed
+set.seed(123)
+
+# Set trellis parameters
+my.settings <- list(
+  strip.background=list(col="#eeeeee"),
+  strip.border=list(col="white"),
+  superpose.line = list(col=myColors[1:5]),
+  superpose.symbol = list(col=myColors[1:5]),
+  axis.line = list(col = "#eeeeee")
+)
 
 # Open Data Frame
 attitudesE  <- read.csv("atitudesEducadores_df.csv")
 
 # Convert items into numeric
-for (i in c(33:71)){
-  attitudesE[,i]   <-  Recode(attitudesE[,i], "'Discordo totalmente'=1 ; 'Discordo'=2 ; 'Nem discordo, nem concordo' = 3; 'Concordo' = 4; 'Concordo totalmente' = 5; else = NA")
-  attitudesE[,i]   <-  as.numeric(attitudesE[,i])  
+ for (i in c(33:71)){
+   attitudesE[,i]   <-  Recode(attitudesE[,i], "'Discordo totalmente'=1 ; 'Discordo'=2 ; 'Nem discordo, nem concordo' = 3; 'Concordo' = 4; 'Concordo totalmente' = 5; else = NA")
+   attitudesE[,i]   <-  as.numeric(attitudesE[,i])  
 }
 
 ## Sum items to remove NA's
@@ -32,9 +49,9 @@ attitudesE <- subset(attitudesE, attitudesE$termo == "Sim" & !is.na(attitudesE$s
 aScale  <-  attitudesE[,33:71]
   
 ## Reverse code items according to Theory
-  for (i in c(14,19,28,29,32,33,34,35)) {
-    aScale[,i] <- recode(aScale[,i], "1=5;2=4;4=2;5=1")
-  }
+#   for (i in c(14,19,28,29,32,33,34,35)) {
+#     aScale[,i] <- recode(aScale[,i], "1=5;2=4;4=2;5=1")
+#   }
 
 ###########################
 # EFA
@@ -98,12 +115,15 @@ aScale1 <- shortScale[, c(1,2,3,4,5,6,7,8,9,10,12,14,16,17,24,29)]
 itemNames <- names(aScale1)
 itemNames[1]
 
+###########################
+# With LTM package
+###########################
+
 # Grade Response Model
 triShort1 <- grm(aScale1, constrained = FALSE)
 
 # Estimate Coeficients
 coef(triShort1)
-
 
 # Para Ana - 
 # Para gerar o gráfico use o script abaixo
@@ -151,3 +171,70 @@ hist(escoresFatorB$score.dat$z1,
      xlab="Theta", 
      main="Titulo do grafico")
 
+###########################
+# IRT - MIRT
+###########################
+
+## NOTE - There has been some concern on the function GRM of ltm package. You can see a forum discussion here: http://stats.stackexchange.com/questions/63891/is-r-output-reliable-specially-irt-package-ltm. In order to avoid this concern, I decided to use the grm estimation of mirt package, which is compared to other softwares.
+
+# Create Scale from factor 1 - Version 1
+factorA <- aScale1
+factorB <- aScale2
+
+modA <- mirt(factorA, itemtype = "graded", model = 1, message = FALSE)
+modB <- mirt(factorB, itemtype = "graded", model = 1, message = FALSE)
+
+# Summary
+summary(modA)
+summary(modB)
+
+# Compute the M2 model fit statistic from Maydey-Olivares and Joe (2006)
+M2(modA); M2(modB)
+
+##########################################
+# PLOTS
+##########################################
+
+coef(modA, IRTpars = TRUE)
+coef(modB, IRTpars = TRUE)
+
+# Plot - Show test information
+itemplot(modA, type = "trace", item = 1)
+plot(modA, type = "info")
+plot(modB, type = "info")
+
+# Plot - Realibility
+plot(modA, type = "rxx")
+plot(modB, type = "rxx")
+
+# Plot - Information trace
+plot(modA, type = "trace", par.settings = my.settings, main = "", auto.key=list(space="top", columns=5, title="", cex.title=1, cex.text = .3, text=c("Disc. Total.","Disc.","Nem Con., nem disc.","Conc.","Conc. Total.")))
+
+plot(modB, type = "trace", par.settings = my.settings, main = "", auto.key=list(space="top", columns=5, title="", cex.title=1, cex.text = .3, text=c("Disc. Total.","Disc.","Nem Con., nem disc.","Conc.","Conc. Total.")))
+
+# Plot - Info trace
+plot(modA, type = "infotrace", par.settings = my.settings, main = "")
+plot(modB, type = "infotrace", par.settings = my.settings, main = "")
+# Conclusion - Items to be included in the next iteration: 
+#              modC - pp002, pp003, pp004, pp006, pp017
+#              modP - pp010, pp012, pp020, pp021, pp029,pp031,pp035,pp036
+
+itemfit(modA)
+itemfit(modB)
+
+residuals(modA)
+residuals(modB)
+
+marginal_rxx(modA, theta_lim = c(-3, 3))
+marginal_rxx(modB, theta_lim = c(-3, 3))
+
+scoresFactorA  <- fscores(modA, full.scores = TRUE)
+scoresFactorB <- fscores(modB, full.scores = TRUE)
+
+dfFactorA <- data.frame(scoresFactorA)
+dfFactorA$F1 <- as.numeric(dfFactorA$F1)
+ggplot(dfFactorA, aes(F1)) + geom_histogram(binwidth = .25, aes(fill = ..count..)) + theme_bw() + xlab("Theta") + ylab("") + xlim(c(-4,4))
+
+dfFactorB <- data.frame(scoresFactorB)
+dfFactorB$F1 <- as.numeric(dfFactorB$F1)
+ggplot(dfFactorB, aes(F1)) + geom_histogram(binwidth = .25, aes(fill = ..count..)) + theme_bw() + xlab("Theta") + ylab("") + xlim(c(-4,4))
