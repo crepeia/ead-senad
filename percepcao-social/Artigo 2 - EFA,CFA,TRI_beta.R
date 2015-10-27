@@ -125,6 +125,12 @@ triShort1 <- grm(aScale1, constrained = FALSE)
 # Estimate Coeficients
 coef(triShort1)
 
+# Plot test information
+plot(triShort1, type="IIC", col= brewer.pal(12,"Set3"), cex=.75, lwd = 2, ylab="Informação", xlab="Theta", main="", cx="topleft", legend=TRUE)
+
+# Plot test information - Full test
+plot(triShort1, type="IIC", item=0, col= brewer.pal(12,"Set3"), cex=1.2, lwd = 2, ylab="Informação", xlab="Theta", main="")
+
 # Para Ana - 
 # Para gerar o gráfico use o script abaixo
 plot(triShort1, type = "ICC", item = 1, main = "Item 8 + itemNames[1]" , ylab = "Rótulo do eixo Y", xlab = "Rótulo do eixo X")
@@ -147,6 +153,13 @@ triShort2 <- grm(aScale2)
 coef(triShort2)
 
 # Plot graphs
+
+# Plot test information - Full test
+plot(triShort2, type="IIC", item=0, col= brewer.pal(12,"Set3"), cex=1.2, lwd = 2, ylab="Informação", xlab="Theta", main="")
+
+# Plot test information
+plot(triShort2, type="IIC", col= brewer.pal(12,"Set3"), cex=.75, lwd = 2, ylab="Informação", xlab="Theta", main="", cx="topleft", legend=TRUE)
+
 pdf("mygraph_2.pdf")
 par(mfrow = c(4,4))
 for (i in 1:15) {  
@@ -186,7 +199,9 @@ modB <- mirt(factorB, itemtype = "graded", model = 1, message = FALSE)
 
 # Summary
 summary(modA)
+coef(modA)
 summary(modB)
+coef(modB)
 
 # Compute the M2 model fit statistic from Maydey-Olivares and Joe (2006)
 M2(modA); M2(modB)
